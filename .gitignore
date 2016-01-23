@@ -1,0 +1,17 @@
+.idea
+target/
+project/project
+project/target
+bin/
+.cache
+.lib/
+dist/*
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+.scala_dependencies
+.worksheet
+local.properties
+*.class
+*.log
