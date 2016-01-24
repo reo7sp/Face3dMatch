@@ -16,42 +16,67 @@
 
 package ru.reo7sp.f3m.image
 
-trait Image extends Iterable[Pixel] {
+import android.graphics.Bitmap
+
+trait Image {
   def width: Int
   def height: Int
 
   def apply(p: Point): Color
+  def update(p: Point, c: Color): Unit
 
-  def copy(rect: Rect): Image
+  def copy(rect: Rect = Rect(Point.ZERO, Point(width, height)), scale: Double = 1.0): Image
 
-  def lines = new Iterable[Image] {
-    override def iterator: Iterator[Image] = new Iterator[Image] {
-      private[this] var _y = 1
+  def rows: Iterator[Iterator[Pixel]]    = (0 until height).iterator.map(y => new PixelIterator(new RowsPixelIteratorStrategy, Point(0, y)))
+  def columns: Iterator[Iterator[Pixel]] = (0 until width).iterator.map(x => new PixelIterator(new ColumnsPixelIteratorStrategy, Point(x, 0)))
+  def pixels: Iterator[Pixel]            = new PixelIterator(new AllPixelIteratorStrategy)
 
-      override def hasNext: Boolean = _y < height
+  class PixelIterator(strategy: PixelIteratorStrategy, var point: Point = Point.ZERO) extends Iterator[Pixel] {
+    override def hasNext: Boolean = strategy.isOk(point)
+    override def next(): Pixel = {
+      val r = Pixel(point, apply(point))
+      point = strategy.nextAfter(point)
+      r
+    }
+  }
 
-      override def next(): Image = {
-        val r = copy(Rect(Point(0, _y - 1), Point(width, _y)))
-        _y += 1
-        r
+  trait PixelIteratorStrategy {
+    def isOk(point: Point): Boolean
+    def nextAfter(oldPoint: Point): Point
+  }
+
+  class AllPixelIteratorStrategy extends PixelIteratorStrategy {
+    override def isOk(point: Point): Boolean = point.y < height
+    override def nextAfter(oldPoint: Point): Point = {
+      if (oldPoint.x + 1 == width) {
+        Point(0, oldPoint.y + 1)
+      } else {
+        Point(oldPoint.x + 1, oldPoint.y)
       }
     }
   }
 
-  override def iterator: Iterator[Pixel] = new Iterator[Pixel] {
-    private[this] var _x, _y = 0
+  class RowsPixelIteratorStrategy extends PixelIteratorStrategy {
+    override def isOk(point: Point): Boolean = point.x < width
+    override def nextAfter(oldPoint: Point): Point = oldPoint.copy(x = oldPoint.x + 1)
+  }
 
-    override def hasNext = _y < height
+  class ColumnsPixelIteratorStrategy extends PixelIteratorStrategy {
+    override def isOk(point: Point): Boolean = point.y < height
+    override def nextAfter(oldPoint: Point): Point = oldPoint.copy(y = oldPoint.y + 1)
+  }
+}
 
-    override def next() = {
-      val p = Point(_x, _y)
-      val c = apply(p)
-      _x += 1
-      if (_x == width) {
-        _x = 0
-        _y += 1
-      }
-      Pixel(p, c)
+object Image {
+  def apply(width: Int, height: Int): Image = new AndroidImage(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888))
+
+  implicit class TraversableOfPixelWrapper(i: TraversableOnce[Pixel]) {
+    def toImage: Image = {
+      val (iter1, iter2) = i.toIterator.duplicate
+      val (w, h) = iter1.foldLeft((0, 0)) { case ((maxX, maxY), (Pixel(Point(x, y), _), _)) => (maxX max x, maxY max y) }
+      val img = Image(w, h)
+      iter2.foreach { case Pixel(point, color) => img(point) = color }
+      img
     }
   }
 }

@@ -23,6 +23,7 @@ case class Rect(topLeft: Point, bottomRight: Point) {
   def y = topLeft.y
   def width = (topLeft.x - bottomRight.x).abs
   def height = (topLeft.y - bottomRight.y).abs
+  def area = width * height
 }
 
 object Rect {

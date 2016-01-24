@@ -16,18 +16,22 @@
 
 package ru.reo7sp.f3m.image
 
+import ru.reo7sp.f3m.image.Color.{ColorValuesParser, RGB}
+
 import scala.math._
 
-case class Color(argb: Int) extends Ordered[Color] {
-  def alphaInt = (argb & 0xff000000) >> 24
-  def redInt   = (argb & 0x00ff0000) >> 16
-  def greenInt = (argb & 0x0000ff00) >> 8
-  def blueInt  =  argb & 0x000000ff
+case class Color(alpha: Double, red: Double, green: Double, blue: Double) extends Ordered[Color] {
+  require(alpha >= 0 && alpha <= 1)
+  require(red >= 0 && red <= 1)
+  require(green >= 0 && green <= 1)
+  require(blue >= 0 && blue <= 1)
 
-  val alpha = alphaInt / 255.0
-  val red   = redInt / 255.0
-  val green = greenInt / 255.0
-  val blue  = blueInt / 255.0
+  def argb = alphaInt << 24 | redInt << 16 | greenInt << 8 | blueInt
+
+  def alphaInt = (alpha * 255).toInt
+  def redInt   = (red * 255).toInt
+  def greenInt = (green * 255).toInt
+  def blueInt  = (blue * 255).toInt
 
   def hue = {
     val min = minComponent
@@ -60,7 +64,6 @@ case class Color(argb: Int) extends Ordered[Color] {
   }
 
   def brightness = maxComponent
-
   def lightness = (minComponent + maxComponent) / 2
 
   def a = sin(hue * 2 * Pi / saturation)
@@ -68,6 +71,8 @@ case class Color(argb: Int) extends Ordered[Color] {
 
   def differenceSqr(other: Color) = pow(other.lightness - lightness, 2) + pow(other.a - a, 2) + pow(other.b - b, 2)
   def difference(other: Color) = sqrt(differenceSqr(other))
+
+  def copy(a: Double = alpha, v1: Double = red, v2: Double = green, v3: Double = blue)(implicit parser: ColorValuesParser = RGB): Color = parser(a, v1, v2, v3)
 
   override def compare(other: Color): Int = differenceSqr(other) match {
     case 0 => 0
@@ -80,10 +85,30 @@ case class Color(argb: Int) extends Ordered[Color] {
 }
 
 object Color {
-  def apply(a: Int, r: Int, g: Int, b: Int) = Color((a & 0xff) << 24 | (r & 0xff) << 16 | (g & 0xff) << 8 | (b & 0xff))
-  def apply(a: Double, r: Double, g: Double, b: Double) = Color((a * 255).toInt, (r * 255).toInt, (g * 255).toInt, (b * 255).toInt)
+  def apply(argb: Int): Color = new Color((argb & 0xff000000) >> 24, (argb & 0x00ff0000) >> 16, (argb & 0x0000ff00) >> 8, argb & 0x000000ff)
+  def apply(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB): Color = parser(a, v1, v2, v3)
 
   implicit class IntWrapper(val i: Int) extends AnyVal {
     def toColor = Color(i)
+  }
+
+  trait ColorValuesParser {
+    def apply(a: Double, v1: Double, v2: Double, v3: Double): Color
+  }
+
+  object RGB extends ColorValuesParser {
+    override def apply(a: Double, r: Double, g: Double, b: Double): Color = new Color(a, r, g, b)
+  }
+
+  object HSB extends ColorValuesParser {
+    override def apply(a: Double, h: Double, s: Double, b: Double): Color = ???
+  }
+
+  object HSL extends ColorValuesParser {
+    override def apply(a: Double, h: Double, s: Double, l: Double): Color = ???
+  }
+
+  object LAB extends ColorValuesParser {
+    override def apply(alpha: Double, l: Double, a: Double, b: Double): Color = ???
   }
 }

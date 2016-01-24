@@ -36,3 +36,7 @@ case class Point(x: Int, y: Int) {
 
   def to3D(z: Int = 0) = Point3D(x, y, z)
 }
+
+object Point {
+  val ZERO = Point(0, 0)
+}

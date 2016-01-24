@@ -19,5 +19,5 @@ package ru.reo7sp.f3m.image.understand
 import ru.reo7sp.f3m.image.Image
 
 package object perspective {
-  def buildWorld(image: Image, partialScenery: PartialScenery): Scenery = ???
+  def buildWorld(image: Image, partialSceneries: Iterator[PartialScenery]): Scenery = ???
 }

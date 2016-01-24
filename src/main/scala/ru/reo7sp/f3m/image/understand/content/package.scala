@@ -16,28 +16,28 @@
 
 package ru.reo7sp.f3m.image.understand
 
-import ru.reo7sp.f3m.image.{Color, Image, Point}
+import ru.reo7sp.f3m.image.{Image, Pixel, Point}
 
 package object content {
-  def findEdges(image: Image)(implicit edgeThreshold: Int = 10): Iterable[Point] = {
-    val t = edgeThreshold * edgeThreshold
+  def findEdges(image: Image)(implicit edgeThreshold: Int = 10): Iterator[Point] = {
+    val thresholdSqr = edgeThreshold * edgeThreshold
 
-    val i = image.par
-    val a = (i zip i.tail).
+    val a = (image.pixels zip image.pixels.drop(1)).
       filter {
-        case ((_, c1: Color), (_, c2: Color)) => c1.differenceSqr(c2) > t
+        case (Pixel(_, color1), Pixel(_, color2)) => color1.differenceSqr(color2) > thresholdSqr
       } map {
-        case ((p1: Point, _), (_, _)) => p1
+        case (Pixel(point, _), _) => point
       }
 
-    val l = image.lines.par
-    val b = (l zip l.tail).flatten.
-      filter {
-        case ((p1: Point, _), (p2: Point, _)) => p1.y != 0 && p2.y != 0
-      } map {
-        case ((p1: Point, _), (_, _)) => p1
-      }
+    val b = (image.rows zip image.rows.drop(1)).flatMap {
+      case (row1, row2) => (row1 zip row2).
+        filter {
+          case (Pixel(point1, _), Pixel(point2, _)) => point1.y != 0 && point2.y != 0
+        } map {
+          case (Pixel(point, _), _) => point
+        }
+    }
 
-    (a ++ b) seq
+    a ++ b
   }
 }
