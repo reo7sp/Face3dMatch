@@ -66,8 +66,8 @@ case class Color(alpha: Double, red: Double, green: Double, blue: Double) extend
   def brightness = maxComponent
   def lightness = (minComponent + maxComponent) / 2
 
-  def a = sin(hue * 2 * Pi / saturation)
-  def b = cos(hue * 2 * Pi / saturation)
+  def a = sin(hue * 2 * Pi) * saturation
+  def b = cos(hue * 2 * Pi) * saturation
 
   def differenceSqr(other: Color) = pow(other.lightness - lightness, 2) + pow(other.a - a, 2) + pow(other.b - b, 2)
   def difference(other: Color) = sqrt(differenceSqr(other))
@@ -101,14 +101,66 @@ object Color {
   }
 
   object HSB extends ColorValuesParser {
-    override def apply(a: Double, h: Double, s: Double, b: Double): Color = ???
+    override def apply(a: Double, h: Double, s: Double, b: Double): Color = {
+      if (s == 0) {
+        new Color(a, b, b, b)
+      } else {
+        val region = (h * 6).toInt
+        val remainder = h * 6 - region
+
+        val p = b * (1 - s)
+        val q = b * (1 - s * remainder)
+        val t = b * (1 - s * (1 - remainder))
+
+        region match {
+          case 0 => new Color(a, b, t, p)
+          case 1 => new Color(a, q, b, p)
+          case 2 => new Color(a, p, b, t)
+          case 3 => new Color(a, p, q, b)
+          case 4 => new Color(a, t, p, b)
+          case _ => new Color(a, b, p, q)
+        }
+      }
+    }
   }
 
+  val HSV = HSB
+
   object HSL extends ColorValuesParser {
-    override def apply(a: Double, h: Double, s: Double, l: Double): Color = ???
+    override def apply(a: Double, h: Double, s: Double, l: Double): Color = {
+      def hue2rgb(p: Double, q: Double, tRaw: Double) = {
+        val t = if (tRaw < 0) {
+          tRaw + 1
+        } else if (tRaw > 1) {
+          tRaw - 1
+        } else {
+          tRaw
+        }
+        if (t < 1.0 / 6) {
+          p + (q - p) * 6 * t
+        } else if (t < 1.0 / 2) {
+          q
+        } else if (t < 2.0 / 3) {
+          p + (q - p) * (2.0 / 3 - t) * 6
+        } else {
+          p
+        }
+      }
+
+      if (s == 0) {
+        new Color(a, l, l, l)
+      } else {
+        val q = if (l < 0.5) l * (1 + s) else l + s - l * s
+        val p = 2 * l - q
+        new Color(a, hue2rgb(p, q, h + 1.0 / 3), hue2rgb(p, q, h), hue2rgb(p, q, h - 1.0 / 3))
+      }
+    }
   }
 
   object LAB extends ColorValuesParser {
-    override def apply(alpha: Double, l: Double, a: Double, b: Double): Color = ???
+    override def apply(alpha: Double, l: Double, a: Double, b: Double): Color = {
+      val s = sqrt(a * a + b * b)
+      HSL(alpha, asin(a * s), s, l)
+    }
   }
 }
