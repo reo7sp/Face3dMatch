@@ -16,8 +16,11 @@
 
 package ru.reo7sp.f3m.image.understand
 
-import ru.reo7sp.f3m.image.Image
-
 package object perspective {
-  def buildWorld(image: Image, partialSceneries: Iterator[PartialScenery]): Scenery = ???
+  def buildScenery(partials: Iterable[PartialScenery]): Scenery = partials.par.map {
+    case partialScenery =>
+      ???
+  }
+
+  def howSimilarAreSceneries(first: Scenery, second: Scenery) = first.par.count(second.par.contains).toDouble / first.size
 }
