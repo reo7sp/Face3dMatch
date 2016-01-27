@@ -14,29 +14,32 @@
  *  limitations under the License.
  */
 
-package ru.reo7sp.f3m.image
+package ru.reo7sp.f3m.math
 
-import scala.math._
-
-case class Point(x: Int, y: Int) {
-  def +(other: Point) = new Point(x + other.x, y + other.y)
-  def -(other: Point) = new Point(x - other.x, y - other.y)
-
-  def distanceSqr(other: Point) = pow(x - other.x, 2) + pow(y - other.y, 2)
-
-  def distance(other: Point): Double = {
-    if (other.x == x) {
-      abs(y - other.y)
-    } else if (other.y == y) {
-      abs(x - other.x)
-    } else {
-      sqrt(distanceSqr(other))
+object NumExtensions {
+  implicit class IntWrapper(val i: Int) extends AnyVal {
+    def squared = i * i
+    def cubed = i * i * i
+    def **(exp: Double) = scala.math.pow(i, exp)
+    def **(exp: Int) = {
+      var r = 1
+      var a = i
+      var n = exp
+      while (n != 0) {
+        if ((n & 1) != 0) {
+          r *= a
+        }
+        a *= a
+        n >>= 1
+      }
+      r
     }
   }
 
-  def to3D(z: Int = 0) = Point3D(x, y, z)
-}
+  implicit class DoubleWrapper(val i: Double) extends AnyVal {
+    def squared = i * i
+    def cubed = i * i * i
+    def **(exp: Double) = scala.math.pow(i, exp)
+  }
 
-object Point {
-  val ZERO = Point(0, 0)
 }

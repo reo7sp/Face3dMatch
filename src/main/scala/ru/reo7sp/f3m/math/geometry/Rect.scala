@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package ru.reo7sp.f3m.image
+package ru.reo7sp.f3m.math.geometry
 
 case class Rect(topLeft: Point, bottomRight: Point) {
   require(topLeft.x < bottomRight.x && topLeft.y > bottomRight.y)

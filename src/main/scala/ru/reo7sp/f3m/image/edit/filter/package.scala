@@ -27,7 +27,7 @@ package object filter {
 
   def contrasted(image: Image, by: Double): Image = image.pixels.map {
     case Pixel(point, color) => {
-      val factor = (1.016 * (by + 1)) / (1 * (1.016 - by))
+      val factor = (1.016 * (by + 1)) / (1.016 - by)
       val r = (factor * (color.red   - 0.5) + 0.5) min 1 max 0
       val g = (factor * (color.green - 0.5) + 0.5) min 1 max 0
       val b = (factor * (color.blue  - 0.5) + 0.5) min 1 max 0

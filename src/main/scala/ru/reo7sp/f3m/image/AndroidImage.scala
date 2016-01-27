@@ -18,6 +18,7 @@ package ru.reo7sp.f3m.image
 
 import android.graphics.Bitmap
 import ru.reo7sp.f3m.image.Color.IntWrapper
+import ru.reo7sp.f3m.math.geometry.{Point, Rect}
 
 import scala.language.implicitConversions
 
@@ -25,16 +26,16 @@ class AndroidImage(val handle: Bitmap) extends Image {
   override val width = handle.getWidth
   override val height = handle.getWidth
 
-  override def apply(p: Point): Color = handle.getPixel(p.x, p.y).toColor
-  override def update(p: Point, c: Color): Unit = handle.setPixel(p.x, p.y, c.argb)
+  override def apply(p: Point): Color = handle.getPixel(p.x.toInt, p.y.toInt).toColor
+  override def update(p: Point, c: Color): Unit = handle.setPixel(p.x.toInt, p.y.toInt, c.argb)
 
   override def copy(rect: Rect, scale: Double) = {
     var h = handle
     if (rect.x != 0 || rect.y != 0 || rect.width != width || rect.height != height) {
-      h = Bitmap.createBitmap(h, rect.x, rect.y, rect.width, rect.height)
+      h = Bitmap.createBitmap(h, rect.x.toInt, rect.y.toInt, rect.width.toInt, rect.height.toInt)
     }
     if (scale != 1.0) {
-      h = Bitmap.createScaledBitmap(h, (width * scale).toInt, (height * scale).toInt, false)
+      h = Bitmap.createScaledBitmap(h, (width * scale).toInt, (height * scale).toInt, true)
     }
     new AndroidImage(h)
   }

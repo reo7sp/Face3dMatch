@@ -16,8 +16,8 @@
 
 package ru.reo7sp.f3m.image.understand.perspective
 
-import ru.reo7sp.f3m.image.{Point, Point3D}
+import ru.reo7sp.f3m.math.geometry.Point
 
 import scala.collection.immutable.HashSet
 
-class PartialScenery(cameraPos: Point3D) extends HashSet[Point]
+class PartialScenery(cameraPos: Point) extends HashSet[Point]

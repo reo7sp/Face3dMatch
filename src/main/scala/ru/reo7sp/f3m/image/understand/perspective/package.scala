@@ -22,5 +22,5 @@ package object perspective {
       ???
   }
 
-  def howSimilarAreSceneries(first: Scenery, second: Scenery) = first.par.count(second.par.contains).toDouble / first.size
+  def howSimilarAreSceneries(first: Scenery, second: Scenery) = first.count(second.contains).toDouble / first.size
 }

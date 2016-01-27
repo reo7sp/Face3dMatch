@@ -17,6 +17,7 @@
 package ru.reo7sp.f3m.image
 
 import android.graphics.Bitmap
+import ru.reo7sp.f3m.math.geometry.{Point, Rect}
 
 trait Image {
   def width: Int
@@ -25,13 +26,13 @@ trait Image {
   def apply(p: Point): Color
   def update(p: Point, c: Color): Unit
 
-  def copy(rect: Rect = Rect(Point.ZERO, Point(width, height)), scale: Double = 1.0): Image
+  def copy(rect: Rect = Rect(Point.zero(2), Point(width, height)), scale: Double = 1.0): Image
 
   def rows: Iterator[Iterator[Pixel]]    = (0 until height).iterator.map(y => new PixelIterator(new RowsPixelIteratorStrategy, Point(0, y)))
   def columns: Iterator[Iterator[Pixel]] = (0 until width).iterator.map(x => new PixelIterator(new ColumnsPixelIteratorStrategy, Point(x, 0)))
   def pixels: Iterator[Pixel]            = new PixelIterator(new AllPixelIteratorStrategy)
 
-  class PixelIterator(strategy: PixelIteratorStrategy, var point: Point = Point.ZERO) extends Iterator[Pixel] {
+  class PixelIterator(strategy: PixelIteratorStrategy, var point: Point = Point.zero(2)) extends Iterator[Pixel] {
     override def hasNext: Boolean = strategy.isOk(point)
     override def next(): Pixel = {
       val r = Pixel(point, apply(point))
@@ -73,8 +74,8 @@ object Image {
   implicit class TraversableOfPixelWrapper(i: TraversableOnce[Pixel]) {
     def toImage: Image = {
       val (iter1, iter2) = i.toIterator.duplicate
-      val (w, h) = iter1.foldLeft((0, 0)) { case ((maxX, maxY), (Pixel(Point(x, y), _), _)) => (maxX max x, maxY max y) }
-      val img = Image(w, h)
+      val (w, h) = iter1.foldLeft((0.0, 0.0)) { case ((maxX, maxY), Pixel(Point(x, y), _)) => (maxX max x, maxY max y) }
+      val img = Image(w.toInt, h.toInt)
       iter2.foreach { case Pixel(point, color) => img(point) = color }
       img
     }

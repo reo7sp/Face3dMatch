@@ -16,4 +16,6 @@
 
 package ru.reo7sp.f3m.image
 
+import ru.reo7sp.f3m.math.geometry.Point
+
 case class Pixel(point: Point, color: Color)

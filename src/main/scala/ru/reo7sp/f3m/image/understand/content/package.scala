@@ -16,7 +16,8 @@
 
 package ru.reo7sp.f3m.image.understand
 
-import ru.reo7sp.f3m.image.{Image, Pixel, Point}
+import ru.reo7sp.f3m.image.{Image, Pixel}
+import ru.reo7sp.f3m.math.geometry.Point
 
 package object content {
   def findEdges(image: Image)(implicit edgeThreshold: Int = 10): Iterator[Point] = {

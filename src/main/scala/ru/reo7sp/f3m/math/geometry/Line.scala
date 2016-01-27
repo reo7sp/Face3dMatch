@@ -14,28 +14,26 @@
  *  limitations under the License.
  */
 
-package ru.reo7sp.f3m.image
+package ru.reo7sp.f3m.math.geometry
 
-import scala.math._
-
-case class Point3D(x: Int, y: Int, z: Int) {
-  def +(other: Point3D) = new Point3D(x + other.x, y + other.y, z + other.z)
-  def -(other: Point3D) = new Point3D(x - other.x, y - other.y, z - other.z)
-
-  def distanceSqr(other: Point3D) = pow(x - other.x, 2) + pow(y - other.y, 2)  + pow(z - other.z, 2)
-
-  def distance(other: Point3D): Double = {
-    if (other.x == x) {
-      abs(y - other.y)
-    } else if (other.y == y) {
-      abs(x - other.x)
-    } else if (other.z == z) {
-      abs(z - other.z)
-    } else {
-      sqrt(distanceSqr(other))
+case class Line(initialPoint: Point, params: Double*) {
+  def apply(point: Point) = {
+    val values = (point.coords, initialPoint.coords, params).zipped.toIterable
+    val firstResult = values.head match {
+      case (x, x0, a) => (x - x0) / a
+    }
+    values.tail.forall {
+      case (x, x0, a) => (x - x0) / a == firstResult
     }
   }
 
-  def to2D = Point(x, y)
+  def findIntersection(other: Line) = {
+    ???
+  }
 }
 
+object Line {
+  def apply(first: Point, second: Point) = {
+    Line(first, first.coords.zip(second.coords).map(t => t._2 - t._1): _*)
+  }
+}

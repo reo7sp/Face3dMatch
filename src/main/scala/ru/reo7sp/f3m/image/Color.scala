@@ -124,7 +124,7 @@ object Color {
     }
   }
 
-  val HSV = HSB
+  def HSV = HSB
 
   object HSL extends ColorValuesParser {
     override def apply(a: Double, h: Double, s: Double, l: Double): Color = {

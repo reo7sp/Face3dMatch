@@ -16,8 +16,14 @@
 
 package ru.reo7sp.f3m.image.understand.perspective
 
-import ru.reo7sp.f3m.image.Point3D
+import ru.reo7sp.f3m.math.geometry.Point
 
 import scala.collection.immutable.HashSet
 
-class Scenery extends HashSet[Point3D]
+class Scenery extends HashSet[Point]
+
+object Scenery {
+  implicit class TraversableOfPoint3DWrapper(c: TraversableOnce[Point]) {
+    def toScenery: Scenery = new Scenery() ++ c
+  }
+}
