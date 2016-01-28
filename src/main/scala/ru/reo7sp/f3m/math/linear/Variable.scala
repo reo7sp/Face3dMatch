@@ -14,16 +14,8 @@
  *  limitations under the License.
  */
 
-package ru.reo7sp.f3m.image.understand
+package ru.reo7sp.f3m.math.linear
 
-package object perspective {
-  def buildScenery(partials: Iterable[PartialScenery]): Scenery = partials.par.map {
-    case partialScenery => {
-      {
-        ???
-      }
-    }
-  }
-
-  def howSimilarAreSceneries(first: Scenery, second: Scenery) = first.count(second.contains).toDouble / first.size
+case class Variable(name: String) {
+  def apply[T](value: T) = value
 }

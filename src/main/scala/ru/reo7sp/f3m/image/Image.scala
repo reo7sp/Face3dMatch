@@ -28,9 +28,9 @@ trait Image {
 
   def copy(rect: Rect = Rect(Point.zero(2), Point(width, height)), scale: Double = 1.0): Image
 
-  def rows: Iterator[Iterator[Pixel]]    = (0 until height).iterator.map(y => new PixelIterator(new RowsPixelIteratorStrategy, Point(0, y)))
+  def rows: Iterator[Iterator[Pixel]] = (0 until height).iterator.map(y => new PixelIterator(new RowsPixelIteratorStrategy, Point(0, y)))
   def columns: Iterator[Iterator[Pixel]] = (0 until width).iterator.map(x => new PixelIterator(new ColumnsPixelIteratorStrategy, Point(x, 0)))
-  def pixels: Iterator[Pixel]            = new PixelIterator(new AllPixelIteratorStrategy)
+  def pixels: Iterator[Pixel] = new PixelIterator(new AllPixelIteratorStrategy)
 
   class PixelIterator(strategy: PixelIteratorStrategy, var point: Point = Point.zero(2)) extends Iterator[Pixel] {
     override def hasNext: Boolean = strategy.isOk(point)
@@ -66,6 +66,7 @@ trait Image {
     override def isOk(point: Point): Boolean = point.y < height
     override def nextAfter(oldPoint: Point): Point = oldPoint.copy(y = oldPoint.y + 1)
   }
+
 }
 
 object Image {
@@ -80,4 +81,5 @@ object Image {
       img
     }
   }
+
 }

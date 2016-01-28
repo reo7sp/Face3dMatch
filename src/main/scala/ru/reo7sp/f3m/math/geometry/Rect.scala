@@ -32,4 +32,5 @@ object Rect {
   implicit class PointWrapper(val p: Point) {
     def toRect(other: Point) = Rect(p, other)
   }
+
 }

@@ -17,6 +17,7 @@
 package ru.reo7sp.f3m.math
 
 object NumExtensions {
+
   implicit class IntWrapper(val i: Int) extends AnyVal {
     def squared = i * i
     def cubed = i * i * i

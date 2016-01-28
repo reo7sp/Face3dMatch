@@ -14,16 +14,12 @@
  *  limitations under the License.
  */
 
-package ru.reo7sp.f3m.image.understand
+package ru.reo7sp.f3m.math.linear
 
-package object perspective {
-  def buildScenery(partials: Iterable[PartialScenery]): Scenery = partials.par.map {
-    case partialScenery => {
-      {
-        ???
-      }
-    }
-  }
+case class LinearEquationsSystem[T](A: Matrix[T], x: Matrix[T], b: Matrix[T]) {
+  require(A.hasOnlyConsts)
+  require(x.hasOnlyVars)
+  require(b.hasOnlyConsts)
 
-  def howSimilarAreSceneries(first: Scenery, second: Scenery) = first.count(second.contains).toDouble / first.size
+  def solve = ???
 }

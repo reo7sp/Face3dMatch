@@ -29,9 +29,9 @@ case class Color(alpha: Double, red: Double, green: Double, blue: Double) extend
   def argb = alphaInt << 24 | redInt << 16 | greenInt << 8 | blueInt
 
   def alphaInt = (alpha * 255).toInt
-  def redInt   = (red * 255).toInt
+  def redInt = (red * 255).toInt
   def greenInt = (green * 255).toInt
-  def blueInt  = (blue * 255).toInt
+  def blueInt = (blue * 255).toInt
 
   def hue = {
     val min = minComponent
@@ -163,4 +163,5 @@ object Color {
       HSL(alpha, asin(a * s), s, l)
     }
   }
+
 }

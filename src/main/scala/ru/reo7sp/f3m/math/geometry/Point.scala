@@ -17,11 +17,13 @@
 package ru.reo7sp.f3m.math.geometry
 
 import ru.reo7sp.f3m.math.NumExtensions.DoubleWrapper
-import ru.reo7sp.f3m.math.geometry.Point._
+import ru.reo7sp.f3m.math.geometry.Point.SeqOfDouble
 
+import scala.collection.SeqLike
+import scala.collection.generic.GenericTraversableTemplate
 import scala.math.sqrt
 
-case class Point(coords: Double*) {
+case class Point(coords: Double*) extends Seq[Double] with GenericTraversableTemplate[Double, Point] with SeqLike[Double, Point] {
   def apply(i: Int) = if (dimension > i) coords(i) else 0.0
   def dimension = coords.size
 
@@ -30,8 +32,8 @@ case class Point(coords: Double*) {
   def z = apply(2)
   def w = apply(3)
 
-  def +(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map(t => t._1 + t._2).toPoint
-  def -(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map(t => t._1 - t._2).toPoint
+  def +(other: Point) = zipAll(other, 0.0, 0.0).map(t => t._1 + t._2).toPoint
+  def -(other: Point) = zipAll(other, 0.0, 0.0).map(t => t._1 - t._2).toPoint
 
   def distanceSqr(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).foldLeft(0.0)((r, t) => r + (t._1 - t._2).squared)
   def distance(other: Point) = sqrt(distanceSqr(other))
@@ -48,6 +50,9 @@ case class Point(coords: Double*) {
     }
     Point(r: _*)
   }
+
+  override def iterator: Iterator[Double] = coords.iterator
+  override def length: Int = coords.length
 }
 
 object Point {
@@ -56,4 +61,5 @@ object Point {
   implicit class SeqOfDouble(s: Seq[Double]) {
     def toPoint = Point(s: _*)
   }
+
 }

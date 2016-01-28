@@ -33,7 +33,5 @@ case class Line(initialPoint: Point, params: Double*) {
 }
 
 object Line {
-  def apply(first: Point, second: Point) = {
-    Line(first, first.coords.zip(second.coords).map(t => t._2 - t._1): _*)
-  }
+  def apply(first: Point, second: Point) = Line(first, first.coords.zip(second.coords).map(t => t._2 - t._1): _*)
 }
