@@ -16,6 +16,9 @@
 
 package ru.reo7sp.f3m.math.linear
 
-case class Variable(name: String) {
-  def apply[T](value: T) = value
+case class Var[T](name: Symbol, var value: Option[T] = None) extends Iterable[T] {
+  override def iterator = new Iterator[T] {
+    override def hasNext = value.nonEmpty
+    override def next() = value.get
+  }
 }

@@ -16,10 +16,68 @@
 
 package ru.reo7sp.f3m.math.linear
 
-case class LinearEquationsSystem[T](A: Matrix[T], x: Matrix[T], b: Matrix[T]) {
-  require(A.hasOnlyConsts)
-  require(x.hasOnlyVars)
-  require(b.hasOnlyConsts)
+import ru.reo7sp.f3m.math.linear.LinearEquationsSystem.SolutionCount.SolutionCount
 
-  def solve = ???
+case class LinearEquationsSystem(A: Matrix[Double], x: Seq[Var[Double]], b: Seq[Double]) {
+  require(A.hasOnlyConsts)
+  require(A.width == x.size)
+  require(A.height == b.size)
+
+  def solve: (Seq[Var[Double]], SolutionCount) = {
+    // http://e-maxx.ru/algo/linear_systems_gauss
+    val arr = A.toMultidimensionalArray.map(_.map(_.right.get))
+
+    val where = Array.fill(A.width)(-1)
+    for (row <- 0 until A.height) {
+      var done = false
+      for (col <- 0 until A.width if !done) {
+        var sel = row
+        for (i <- row until A.height if arr(i)(col).abs > arr(sel)(col).abs) {
+          sel = i
+        }
+        if (arr(sel)(col) != 0) {
+          val t = arr(sel)
+          arr(sel) = arr(row)
+          arr(row) = t
+
+          where(col) = row
+          done = true
+
+          for (i <- 0 until A.height if i != row) {
+            val c = arr(i)(col) / arr(row)(col)
+            for (j <- col to A.width) {
+              arr(i)(j) -= arr(row)(j) * c
+            }
+          }
+        }
+      }
+    }
+
+    val ans = Array.fill(A.width)(0.0)
+
+    for (i <- 0 until A.width if where(i) != -1) {
+      ans(i) = arr(where(i))(A.width) / arr(where(i))(i)
+    }
+
+    for (i <- 0 until A.heigth) {
+      var sum = 0
+      for (j <- 0 until A.witdh) {
+        sum += ans(j) * arr(i)(j)
+      }
+      if (sum - a(i)(m) != 0) {
+        return (Seq[Var[Double]](), Zero)
+      }
+    }
+
+    ((ans.filter(_ != 0) zip x).map(Var(_, Some(_))), if (where.contains(-1)) Infinity else One)
+  }
+}
+
+object LinearEquationsSystem {
+
+  object SolutionCount extends Enumeration {
+    type SolutionCount = Value
+    val Zero, One, Infinity = Value
+  }
+
 }

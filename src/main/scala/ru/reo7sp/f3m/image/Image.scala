@@ -17,7 +17,7 @@
 package ru.reo7sp.f3m.image
 
 import android.graphics.Bitmap
-import ru.reo7sp.f3m.math.geometry.{Point, Rect}
+import ru.reo7sp.f3m.math.geometry.{Point, Rect, Size}
 
 trait Image {
   def width: Int
@@ -70,13 +70,13 @@ trait Image {
 }
 
 object Image {
-  def apply(width: Int, height: Int): Image = new AndroidImage(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888))
+  def apply(size: Size): Image = new AndroidImage(Bitmap.createBitmap(size.width, size.height, Bitmap.Config.ARGB_8888))
 
   implicit class TraversableOfPixelWrapper(i: TraversableOnce[Pixel]) {
     def toImage: Image = {
       val (iter1, iter2) = i.toIterator.duplicate
       val (w, h) = iter1.foldLeft((0.0, 0.0)) { case ((maxX, maxY), Pixel(Point(x, y), _)) => (maxX max x, maxY max y) }
-      val img = Image(w.toInt, h.toInt)
+      val img = Image(Size(w.toInt, h.toInt))
       iter2.foreach { case Pixel(point, color) => img(point) = color }
       img
     }
