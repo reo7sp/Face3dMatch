@@ -17,11 +17,14 @@
 package ru.reo7sp.f3m.image
 
 import android.graphics.Bitmap
+import ru.reo7sp.f3m.image.Color._
 import ru.reo7sp.f3m.math.geometry.{Point, Rect}
 
 import scala.language.implicitConversions
 
 class AndroidImage(val handle: Bitmap) extends Image {
+  require(handle != null)
+
   override val width = handle.getWidth
   override val height = handle.getWidth
 

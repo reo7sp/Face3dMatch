@@ -16,10 +16,38 @@
 
 package ru.reo7sp.f3m.ui
 
+import android.hardware.Camera
+import org.scaloid.common._
+import ru.reo7sp.f3m.camera.{CameraCapturer, CameraPreview}
+
+import scala.util.control.NonFatal
+
 class MainActivity extends SActivity {
+  private val _camera = acquireCamera()
+  private val _capturer = new CameraCapturer(_camera)
+
   onCreate {
     contentView = new SVerticalLayout {
-      SButton("Greet", toast("Hello!"))
+      new CameraPreview(_camera).here
+      new SLinearLayout {
+        SButton("Setup", _capturer.capture().onSuccess(???))
+        SButton("Unlock", _capturer.capture().onSuccess(???))
+      }.wrap.here
+    }
+  }
+
+  private def acquireCamera(): Camera = {
+    try { {
+      val camera = Camera.open()
+      onDestroy(camera.release())
+      camera
+    }
+    } catch {
+      case NonFatal(e) => {
+        error(e.toString)
+        alert("No camera!", e.toString)
+        throw e
+      }
     }
   }
 }

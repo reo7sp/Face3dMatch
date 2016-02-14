@@ -14,12 +14,23 @@
  *  limitations under the License.
  */
 
-package ru.reo7sp.f3m.image.understand.perspective
+package ru.reo7sp.f3m.camera
 
-import ru.reo7sp.f3m.math.geometry.Point
+import android.graphics.BitmapFactory
+import android.hardware.Camera
+import android.hardware.Camera.PictureCallback
+import ru.reo7sp.f3m.image.AndroidImage
 
-import scala.collection.SetLike
-import scala.collection.generic.GenericSetTemplate
-import scala.collection.immutable.HashSet
+import scala.concurrent.{Future, Promise}
 
-case class PartialScenery(cameraPos: Point) extends HashSet[Point] with GenericSetTemplate[Point, Scenery] with SetLike[Point, Scenery]
+class CameraCapturer(val camera: Camera) {
+  def capture(): Future[AndroidImage] = {
+    val p = Promise[AndroidImage]
+    camera.takePicture(null, null, new PictureCallback {
+      override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = {
+        p.success(new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)))
+      }
+    })
+    p.future
+  }
+}
