@@ -24,23 +24,24 @@ package object content {
     val thresholdSqr = edgeThreshold * edgeThreshold
 
     val a = (image.pixels zip image.pixels.drop(1)).
-      filter {
-        case (Pixel(_, color1), Pixel(_, color2)) => color1.differenceSqr(color2) > thresholdSqr
-      } map {
-      case (Pixel(point, _), _) => point
+      filter { case (Pixel(_, color1), Pixel(_, color2)) => {
+        color1.differenceSqr(color2) > thresholdSqr
+      }
+      } map { case (Pixel(point, _), _) => {
+      point
+    }
     }
 
-    val b = (image.rows zip image.rows.drop(1)).flatMap {
-      case (row1, row2) => {
-        {
-          (row1 zip row2).
-            filter {
-              case (Pixel(point1, _), Pixel(point2, _)) => point1.y != 0 && point2.y != 0
-            } map {
-            case (Pixel(point, _), _) => point
-          }
+    val b = (image.rows zip image.rows.drop(1)).flatMap { case (row1, row2) => {
+      (row1 zip row2).
+        filter { case (Pixel(point1, _), Pixel(point2, _)) => {
+          point1.y != 0 && point2.y != 0
         }
+        } map { case (Pixel(point, _), _) => {
+        point
       }
+      }
+    }
     }
 
     a ++ b

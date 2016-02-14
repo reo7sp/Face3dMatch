@@ -18,9 +18,11 @@ package ru.reo7sp.f3m.image.understand.perspective
 
 import ru.reo7sp.f3m.math.geometry.Point
 
+import scala.collection.SetLike
+import scala.collection.generic.GenericSetTemplate
 import scala.collection.immutable.HashSet
 
-class Scenery extends HashSet[Point]
+class Scenery extends HashSet[Point] with GenericSetTemplate[Point, Scenery] with SetLike[Point, Scenery]
 
 object Scenery {
 

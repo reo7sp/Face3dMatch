@@ -37,13 +37,12 @@ case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) extends Seq[Ma
   def hasOnlyConsts = forall(_.isRight)
 
   def toMultidimensionalArray: Array[Array[MatrixElement[T]]] = {
-    (0 until height).map {
-      case i => {
-        val t = i * width
-        (0 until width).map {
-          case j => elements(t + j)
-        }.toArray
-      }
+    (0 until height).map { case i => {
+      val t = i * width
+      (0 until width).map {
+        case j => elements(t + j)
+      }.toArray
+    }
     }.toArray
   }
 
@@ -61,4 +60,5 @@ object Matrix {
   implicit class ArrayOfArrayOfMatrixElementWrapper[T](arr: Array[Array[MatrixElement[T]]]) {
     def toMatrix = Matrix(Size(if (arr.nonEmpty) arr(0).length else 0, arr.length), arr.flatten)
   }
+
 }

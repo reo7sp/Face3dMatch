@@ -16,13 +16,21 @@
 
 package ru.reo7sp.f3m.image.understand
 
+import ru.reo7sp.f3m.image.understand.perspective.Scenery.TraversableOfPoint3DWrapper
+import ru.reo7sp.f3m.math.geometry.Line
+
 package object perspective {
-  def buildScenery(partials: Iterable[PartialScenery]): Scenery = partials.par.map {
-    case partialScenery => {
-      {
-        ???
-      }
+  def buildScenery(partials: Iterable[PartialScenery]): Scenery = {
+    val lines = partials.par.flatMap { partialScenery =>
+      partialScenery.map(Line(partialScenery.cameraPos, _))
     }
+
+    lines.flatMap { line =>
+      lines.map((line, _))
+    }.map { case (line1, line2) => {
+      line1 findIntersection line2
+    }
+    }.filter(_.nonEmpty).map(_.get).seq.toScenery
   }
 
   def howSimilarAreSceneries(first: Scenery, second: Scenery) = first.count(second.contains).toDouble / first.size

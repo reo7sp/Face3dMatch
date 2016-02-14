@@ -16,8 +16,6 @@
 
 package ru.reo7sp.f3m.ui
 
-import org.scaloid.common._
-
 class MainActivity extends SActivity {
   onCreate {
     contentView = new SVerticalLayout {

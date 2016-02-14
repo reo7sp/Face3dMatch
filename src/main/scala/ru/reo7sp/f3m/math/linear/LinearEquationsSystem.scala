@@ -25,7 +25,7 @@ case class LinearEquationsSystem(A: Matrix[Double], x: Seq[Var[Double]], b: Seq[
 
   def solve: (Seq[Var[Double]], SolutionCount) = {
     // http://e-maxx.ru/algo/linear_systems_gauss
-    val arr = A.toMultidimensionalArray.map(_.map(_.right.get))
+    var arr = A.toMultidimensionalArray.map(_.map(_.right.get))
 
     val where = Array.fill(A.width)(-1)
     for (row <- 0 until A.height) {

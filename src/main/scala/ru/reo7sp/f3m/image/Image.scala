@@ -16,7 +16,6 @@
 
 package ru.reo7sp.f3m.image
 
-import android.graphics.Bitmap
 import ru.reo7sp.f3m.math.geometry.{Point, Rect, Size}
 
 trait Image {
