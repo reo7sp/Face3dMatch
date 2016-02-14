@@ -43,11 +43,10 @@ class MainActivity extends SActivity {
       camera
     }
     } catch {
-      case NonFatal(e) => {
+      case NonFatal(e) =>
         error(e.toString)
         alert("No camera!", e.toString)
         throw e
-      }
     }
   }
 }

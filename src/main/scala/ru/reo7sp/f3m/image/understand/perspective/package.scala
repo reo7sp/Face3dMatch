@@ -27,9 +27,8 @@ package object perspective {
 
     lines.flatMap { line =>
       lines.map((line, _))
-    }.map { case (line1, line2) => {
+    }.map { case (line1, line2) =>
       line1 findIntersection line2
-    }
     }.filter(_.nonEmpty).map(_.get).seq.toScenery
   }
 
