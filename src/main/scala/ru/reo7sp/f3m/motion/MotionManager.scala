@@ -20,8 +20,11 @@ import android.hardware.{Sensor, SensorEvent, SensorEventListener, SensorManager
 import ru.reo7sp.f3m.math.NumExtensions.DoubleWrapper
 import ru.reo7sp.f3m.math.geometry.Point
 
-class MotionListener(val sensorManager: SensorManager) {
+import scala.collection.mutable
+
+class MotionManager(val sensorManager: SensorManager) {
   private[this] var _x, _y, _z = 0.0
+  private[this] var _listeners = new mutable.ListBuffer[Point => ()]
 
   private[this] val _listener = new SensorEventListener {
     private[this] var _lastTime = 0L
@@ -32,6 +35,11 @@ class MotionListener(val sensorManager: SensorManager) {
         _x += event.values(0) * dt.squared / 2
         _y += event.values(1) * dt.squared / 2
         _z += event.values(2) * dt.squared / 2
+
+        if (_listeners.nonEmpty) {
+          val p = position
+          _listeners.par.foreach(_ (p))
+        }
       }
       _lastTime = event.timestamp
     }
@@ -56,4 +64,6 @@ class MotionListener(val sensorManager: SensorManager) {
     _y = 0
     _z = 0
   }
+
+  def onMotion(callback: Point => ()) = _listeners += callback
 }
