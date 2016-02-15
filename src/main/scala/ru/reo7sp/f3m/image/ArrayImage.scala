@@ -39,9 +39,13 @@ class ArrayImage(val size: Size) extends Image with ImageMutability with ImageCo
 object ArrayImage extends ImageCompanion[ArrayImage] {
   override def apply(size: Size): ArrayImage = new ArrayImage(size)
 
-  override protected def apply(iter: Iterator[Pixel], size: Size): ArrayImage = {
+  override def apply(pixels: TraversableOnce[Pixel], size: Size): ArrayImage = {
     val img = ArrayImage(size)
-    iter.foreach(img.update)
+    pixels.foreach(img.update)
     img
+  }
+
+  implicit class AndroidImageWrapper(img: AndroidImage) {
+    def toArrayImage = ArrayImage(img.pixels, img.size)
   }
 }

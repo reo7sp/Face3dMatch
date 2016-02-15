@@ -23,7 +23,7 @@ import ru.reo7sp.f3m.image.{Image, Pixel}
 package object filter {
   def desaturated[T <: Image](image: T) = image.pixels.map { case Pixel(point, color) =>
     Pixel(point, color.copy(v2 = 0)(HSB))
-  }.toImage[T]
+  }.toImage[T](image.size)
 
   def contrasted[T <: Image](image: T, by: Double) = image.pixels.map { case Pixel(point, color) =>
     val factor = (1.016 * (by + 1)) / (1.016 - by)
@@ -31,5 +31,5 @@ package object filter {
     val g = (factor * (color.green - 0.5) + 0.5) min 1 max 0
     val b = (factor * (color.blue - 0.5) + 0.5) min 1 max 0
     Pixel(point, color.copy(color.a, r, g, b))
-  }.toImage[T]
+  }.toImage[T](image.size)
 }

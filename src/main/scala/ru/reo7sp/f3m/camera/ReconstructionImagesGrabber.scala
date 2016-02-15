@@ -16,26 +16,35 @@
 
 package ru.reo7sp.f3m.camera
 
+import ru.reo7sp.f3m.image.ArrayImage.AndroidImageWrapper
 import ru.reo7sp.f3m.image.edit.filter._
 import ru.reo7sp.f3m.image.understand.content._
-import ru.reo7sp.f3m.image.understand.perspective.PartialScenery
 import ru.reo7sp.f3m.image.understand.perspective.PartialScenery.TraversableOfPoint3DWrapper
+import ru.reo7sp.f3m.image.understand.perspective.{PartialScenery, _}
 import ru.reo7sp.f3m.motion.MotionManager
 
 import scala.collection.mutable
+import scala.concurrent.Future
 
 class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManager: MotionManager) {
   val partialSceneries = new mutable.ListBuffer[PartialScenery]
 
-  def start(): Unit = {
+  def startGrabbing(): Unit = {
     _motionManager.start()
     _motionManager.onMotion { position =>
       _cameraCapturer.capture().onSuccess { case image =>
-        val editedImage = contrasted(desaturated(image.copy(scale = 0.01)), by = 10)
-        partialSceneries += findEdges(editedImage).toPartialScenery(position)
+        Future {
+          val scaledImage = image.copy(scale = 0.01).toArrayImage
+          val editedImage = contrasted(desaturated(scaledImage), by = 10)
+          partialSceneries.synchronized {
+            partialSceneries += findEdges(editedImage).toPartialScenery(position)
+          }
+        }
       }
     }
   }
 
-  def stop(): Unit = _motionManager.stop()
+  def stopGrabbing(): Unit = _motionManager.stop()
+
+  def compute() = buildScenery(partialSceneries)
 }

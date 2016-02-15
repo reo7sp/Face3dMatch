@@ -48,9 +48,9 @@ object AndroidImage extends ImageCompanion[AndroidImage] {
 
   override def apply(size: Size) = new AndroidImage(Bitmap.createBitmap(size.width, size.height, Bitmap.Config.ARGB_8888))
 
-  protected override def apply(iter: Iterator[Pixel], size: Size) = {
+  override def apply(pixels: TraversableOnce[Pixel], size: Size) = {
     val img = AndroidImage(size)
-    iter.foreach(img.update)
+    pixels.foreach(img.update)
     img
   }
 }

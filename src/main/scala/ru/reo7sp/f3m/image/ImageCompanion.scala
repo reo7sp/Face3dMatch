@@ -27,7 +27,7 @@ trait ImageCompanion[T <: Image] {
     apply(iter2, Size(w.toInt, h.toInt))
   }
 
-  protected def apply(iter: Iterator[Pixel], size: Size): T
+  def apply(iter: TraversableOnce[Pixel], size: Size): T
 
   implicit def imageCompanion: ImageCompanion[T] = this
 }

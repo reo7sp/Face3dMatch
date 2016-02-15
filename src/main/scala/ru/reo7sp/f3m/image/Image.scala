@@ -65,7 +65,8 @@ trait Image {
 }
 
 object Image {
-  implicit class TraversableOfPixelWrapper(i: TraversableOnce[Pixel]) {
-    def toImage[T <: Image](implicit companion: ImageCompanion[T]) = companion(i)
+  implicit class TraversableOfPixelWrapper(pixels: TraversableOnce[Pixel]) {
+    def toImage[T <: Image](implicit companion: ImageCompanion[T]) = companion(pixels)
+    def toImage[T <: Image](size: Size)(implicit companion: ImageCompanion[T]) = companion(pixels, size)
   }
 }

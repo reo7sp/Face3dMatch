@@ -20,7 +20,7 @@ import ru.reo7sp.f3m.image.understand.perspective.Scenery.TraversableOfPoint3DWr
 import ru.reo7sp.f3m.math.geometry.Line
 
 package object perspective {
-  def buildScenery(partials: Iterable[PartialScenery]): Scenery = {
+  def buildScenery(partials: Traversable[PartialScenery]): Scenery = {
     val lines = partials.par.flatMap { partialScenery =>
       partialScenery.map(Line(partialScenery.cameraPos, _))
     }
