@@ -46,5 +46,5 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
 
   def stopGrabbing(): Unit = _motionManager.stop()
 
-  def compute() = buildScenery(partialSceneries)
+  def compute = buildScenery(partialSceneries)
 }

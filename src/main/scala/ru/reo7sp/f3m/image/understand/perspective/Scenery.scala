@@ -25,9 +25,10 @@ import scala.collection.immutable.HashSet
 class Scenery extends HashSet[Point] with GenericSetTemplate[Point, Scenery] with SetLike[Point, Scenery]
 
 object Scenery {
+  def apply(c: TraversableOnce[Point]) = new Scenery ++ c
 
   implicit class TraversableOfPoint3DWrapper(c: TraversableOnce[Point]) {
-    def toScenery: Scenery = new Scenery ++ c
+    def toScenery = Scenery(c)
   }
 
 }

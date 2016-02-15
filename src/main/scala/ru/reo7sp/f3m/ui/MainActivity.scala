@@ -16,37 +16,41 @@
 
 package ru.reo7sp.f3m.ui
 
-import android.hardware.Camera
+import android.content.Intent
 import org.scaloid.common._
-import ru.reo7sp.f3m.camera.{CameraCapturer, CameraPreview}
-
-import scala.util.control.NonFatal
+import ru.reo7sp.f3m.data.AuthDataStorage
+import ru.reo7sp.f3m.image.understand.perspective._
+import ru.reo7sp.f3m.ui.CapturingActivity.FunctionWrapper
 
 class MainActivity extends SActivity {
-  private[this] val _camera = acquireCamera()
-  private[this] val _capturer = new CameraCapturer(_camera)
+  private[this] val _authDataStorage = new AuthDataStorage
 
   onCreate {
     contentView = new SVerticalLayout {
-      new CameraPreview(_camera).here
-      new SLinearLayout {
-        SButton("Setup", _capturer.capture().onSuccess(???))
-        SButton("Unlock", _capturer.capture().onSuccess(???))
-      }.wrap.here
-    }
-  }
-
-  private def acquireCamera(): Camera = {
-    try { {
-      val camera = Camera.open()
-      onDestroy(camera.release())
-      camera
-    }
-    } catch {
-      case NonFatal(e) =>
-        error(e.toString)
-        alert("No camera!", e.toString)
-        throw e
+      SButton("Установить", {
+        val intent = new Intent().putExtra("callback", FunctionWrapper({ scenery =>
+          _authDataStorage.save(scenery)
+          toast("Сохранено")
+        }))
+        intent.start[CapturingActivity]
+      })
+      SButton("Разблокировать", {
+        val intent = new Intent().putExtra("callback", FunctionWrapper({ scenery =>
+          _authDataStorage.load match {
+            case Some(savedScenery) =>
+              val similarity = howSimilarAreSceneries(savedScenery, scenery)
+              if (similarity > 0.5) {
+                toast(s"Успешно. ${(similarity * 100).toInt}%")
+              } else {
+                toast(s"Не успешно. ${(similarity * 100).toInt}%")
+              }
+            case None =>
+              _authDataStorage.save(scenery)
+              toast("Успешно")
+          }
+        }))
+        intent.start[CapturingActivity]
+      })
     }
   }
 }
