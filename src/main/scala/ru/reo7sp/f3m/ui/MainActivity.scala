@@ -19,7 +19,6 @@ package ru.reo7sp.f3m.ui
 import android.content.Intent
 import org.scaloid.common._
 import ru.reo7sp.f3m.data.AuthDataStorage
-import ru.reo7sp.f3m.image.understand.perspective._
 import ru.reo7sp.f3m.ui.CapturingActivity.FunctionWrapper
 
 class MainActivity extends SActivity {
@@ -38,7 +37,7 @@ class MainActivity extends SActivity {
         val intent = new Intent().putExtra("callback", FunctionWrapper({ scenery =>
           _authDataStorage.load match {
             case Some(savedScenery) =>
-              val similarity = howSimilarAreSceneries(savedScenery, scenery)
+              val similarity = savedScenery similarityWith scenery
               if (similarity > 0.5) {
                 toast(s"Успешно. ${(similarity * 100).toInt}%")
               } else {

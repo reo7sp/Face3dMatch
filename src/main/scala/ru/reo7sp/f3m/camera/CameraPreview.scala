@@ -25,18 +25,17 @@ import org.scaloid.common.{SSurfaceView, _}
 
 import scala.util.control.NonFatal
 
-class CameraPreview(val camera: Camera) extends SSurfaceView {
+class CameraPreview(val camera: Camera)(implicit context: android.content.Context, parentVGroup: TraitViewGroup[_] = null) extends SSurfaceView {
   private[this] val _surfaceHolder = getHolder
 
   _surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
   _surfaceHolder.addCallback(new Callback {
     private def startPreview(holder: SurfaceHolder): Unit = {
-      try { {
+      try {
         camera.setPreviewDisplay(holder)
         camera.startPreview()
-      }
       } catch {
-        case e: IOException => error(e.toString)
+        case e: IOException => error(e.toString)(LoggerTag("CameraPreview"))
       }
     }
 

@@ -31,6 +31,7 @@ import scala.util.control.NonFatal
 class AuthDataStorage(val fileName: String = "authdata.json")(implicit ctx: Context) {
   def load: Option[Scenery] = {
     implicit val formats = DefaultFormats
+
     try { {
       val points = JsonMethods.parse(Source.fromInputStream(ctx.openFileInput(fileName)).mkString).children.map(_.extract[Point])
       Some(Scenery(points))
@@ -41,9 +42,14 @@ class AuthDataStorage(val fileName: String = "authdata.json")(implicit ctx: Cont
   }
 
   def save(scenery: Scenery): Unit = {
+    implicit val formats = DefaultFormats
+
     val writer = new OutputStreamWriter(ctx.openFileOutput(fileName, Context.MODE_PRIVATE))
     try { {
-      writer.write(JsonMethods.compact(JsonMethods.render(scenery)))
+      val json = scenery.points.map { point =>
+        ("x" -> point.x) ~ ("y" -> point.y) ~ ("z" -> point.z)
+      }
+      writer.write(JsonMethods.compact(JsonMethods.render(json)))
     }
     } finally {
       writer.close()

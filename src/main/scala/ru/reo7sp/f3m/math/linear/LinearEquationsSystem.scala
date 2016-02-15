@@ -16,16 +16,16 @@
 
 package ru.reo7sp.f3m.math.linear
 
-import ru.reo7sp.f3m.math.linear.LinearEquationsSystem.SolutionCount.SolutionCount
+import ru.reo7sp.f3m.math.linear.LinearEquationsSystem.SolutionCount
 
 case class LinearEquationsSystem(A: Matrix[Double], x: Seq[Var[Double]], b: Seq[Double]) {
   require(A.hasOnlyConsts)
   require(A.width == x.size)
   require(A.height == b.size)
 
-  def solve: (Seq[Var[Double]], SolutionCount) = {
+  def solve: (Seq[Var[Double]], SolutionCount.Value) = {
     // http://e-maxx.ru/algo/linear_systems_gauss
-    var arr = A.toMultidimensionalArray.map(_.map(_.right.get))
+    val arr = A.toMultidimensionalArray.map(_.map(_.right.get))
 
     val where = Array.fill(A.width)(-1)
     for (row <- 0 until A.height) {
@@ -59,24 +59,24 @@ case class LinearEquationsSystem(A: Matrix[Double], x: Seq[Var[Double]], b: Seq[
       ans(i) = arr(where(i))(A.width) / arr(where(i))(i)
     }
 
-    for (i <- 0 until A.heigth) {
-      var sum = 0
-      for (j <- 0 until A.witdh) {
+    for (i <- 0 until A.height) {
+      var sum = 0.0
+      for (j <- 0 until A.width) {
         sum += ans(j) * arr(i)(j)
       }
-      if (sum - a(i)(m) != 0) {
-        return (Seq[Var[Double]](), Zero)
+      if (sum - arr(i)(A.width - 1) != 0) {
+        return (Seq[Var[Double]](), SolutionCount.Zero)
       }
     }
 
-    ((ans.filter(_ != 0) zip x).map(Var(_, Some(_))), if (where.contains(-1)) Infinity else One)
+    ((x zip ans).map { case (variable, value) => variable.copy(value = Some(value)) },
+      if (where.contains(-1)) SolutionCount.Infinity else SolutionCount.One)
   }
 }
 
 object LinearEquationsSystem {
 
   object SolutionCount extends Enumeration {
-    type SolutionCount = Value
     val Zero, One, Infinity = Value
   }
 

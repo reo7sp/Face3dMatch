@@ -24,6 +24,7 @@ import ru.reo7sp.f3m.image.understand.perspective.{PartialScenery, _}
 import ru.reo7sp.f3m.motion.MotionManager
 
 import scala.collection.mutable
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManager: MotionManager) {

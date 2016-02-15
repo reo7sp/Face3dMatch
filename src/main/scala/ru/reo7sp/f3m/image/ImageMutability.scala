@@ -19,7 +19,7 @@ package ru.reo7sp.f3m.image
 import ru.reo7sp.f3m.math.geometry.Point
 
 trait ImageMutability {
-  def update(pixel: Pixel) = update(pixel.point, pixel.color)
+  def update(pixel: Pixel): Unit = update(pixel.point, pixel.color)
 
-  def update(p: Point, c: Color)
+  def update(p: Point, c: Color): Unit
 }

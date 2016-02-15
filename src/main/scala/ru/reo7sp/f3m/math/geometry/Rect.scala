@@ -31,12 +31,12 @@ case class Rect(topLeft: Point, bottomRight: Point) {
 }
 
 object Rect {
-  def apply(p1: Point, p2: Point) = new Rect(Point(p1.x min p2.x, p1.y max p2.y), Point(p1.x max p2.x, p1.y min p2.y))
+  def applyFixed(p1: Point, p2: Point) = new Rect(Point(p1.x min p2.x, p1.y max p2.y), Point(p1.x max p2.x, p1.y min p2.y))
 
   implicit class PointWrapper(p: Point) {
     def in(rect: Rect) = rect.has(p)
 
-    def toRect(other: Point) = Rect(p, other)
+    def toRect(other: Point) = Rect.applyFixed(p, other)
   }
 
 }

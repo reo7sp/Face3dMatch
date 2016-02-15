@@ -21,6 +21,7 @@ import ru.reo7sp.f3m.math.NumExtensions.DoubleWrapper
 import ru.reo7sp.f3m.math.geometry.Point
 
 import scala.collection.mutable
+import scala.language.reflectiveCalls
 
 class MotionManager(val sensorManager: SensorManager) {
   private[this] var _x, _y, _z = 0.0

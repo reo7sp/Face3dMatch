@@ -18,16 +18,12 @@ package ru.reo7sp.f3m.image.understand.perspective
 
 import ru.reo7sp.f3m.math.geometry.Point
 
-import scala.collection.SetLike
-import scala.collection.generic.GenericSetTemplate
-import scala.collection.immutable.HashSet
-
-case class PartialScenery(cameraPos: Point) extends HashSet[Point] with GenericSetTemplate[Point, PartialScenery] with SetLike[Point, PartialScenery]
+case class PartialScenery(cameraPos: Point, points: Set[Point])
 
 object PartialScenery {
 
   implicit class TraversableOfPoint3DWrapper(c: TraversableOnce[Point]) {
-    def toPartialScenery(cameraPos: Point): PartialScenery = new PartialScenery(cameraPos) ++ c
+    def toPartialScenery(cameraPos: Point): PartialScenery = PartialScenery(cameraPos, c.toSet)
   }
 
 }

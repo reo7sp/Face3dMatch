@@ -16,8 +16,8 @@
 
 package ru.reo7sp.f3m.math.geometry
 
+import ru.reo7sp.f3m.math.geometry.Point.SeqOfDouble
 import ru.reo7sp.f3m.math.linear.{LinearEquationsSystem, Matrix, Var}
-import Point.SeqOfDouble
 
 case class Line(initialPoint: Point, params: Double*) {
   def dimension = params.size
@@ -33,20 +33,20 @@ case class Line(initialPoint: Point, params: Double*) {
   }
 
   def findIntersection(other: Line) = {
-    val result = LinearEquationsSystem(
-      Matrix(Size(dimension, 2), params ++ other.params),
+    val (answer, ansCount) = LinearEquationsSystem(
+      Matrix[Double](Size(dimension, 2), (params ++ other.params).map(Right(_))),
       Seq(Var[Double]('x), Var[Double]('y), Var[Double]('z)),
       Seq(0.0, 0.0)
     ).solve
 
-    if (result._2 == LinearEquationsSystem.SolutionCount.Zero) {
+    if (ansCount == LinearEquationsSystem.SolutionCount.Zero) {
       None
     } else {
-      Some(result._1.map(_.value.get).toPoint)
+      Some(answer.map(_.value.get).toPoint)
     }
   }
 }
 
 object Line {
-  def apply(first: Point, second: Point) = Line(first, first.coords.zip(second.coords).map(t => t._2 - t._1): _*)
+  def apply(first: Point, second: Point): Line = Line(first, first.coords.zip(second.coords).map(t => t._2 - t._1): _*)
 }
