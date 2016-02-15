@@ -14,20 +14,12 @@
  *  limitations under the License.
  */
 
-package ru.reo7sp.f3m.image.understand.perspective
+package ru.reo7sp.f3m.image
 
 import ru.reo7sp.f3m.math.geometry.Point
 
-import scala.collection.SetLike
-import scala.collection.generic.GenericSetTemplate
-import scala.collection.immutable.HashSet
+trait ImageMutability {
+  def update(pixel: Pixel) = update(pixel.point, pixel.color)
 
-class Scenery extends HashSet[Point] with GenericSetTemplate[Point, Scenery] with SetLike[Point, Scenery]
-
-object Scenery {
-
-  implicit class TraversableOfPoint3DWrapper(c: TraversableOnce[Point]) {
-    def toScenery: Scenery = new Scenery ++ c
-  }
-
+  def update(p: Point, c: Color)
 }

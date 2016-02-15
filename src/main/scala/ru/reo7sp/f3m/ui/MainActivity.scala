@@ -23,8 +23,8 @@ import ru.reo7sp.f3m.camera.{CameraCapturer, CameraPreview}
 import scala.util.control.NonFatal
 
 class MainActivity extends SActivity {
-  private val _camera = acquireCamera()
-  private val _capturer = new CameraCapturer(_camera)
+  private[this] val _camera = acquireCamera()
+  private[this] val _capturer = new CameraCapturer(_camera)
 
   onCreate {
     contentView = new SVerticalLayout {

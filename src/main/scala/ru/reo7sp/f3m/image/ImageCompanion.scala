@@ -14,20 +14,20 @@
  *  limitations under the License.
  */
 
-package ru.reo7sp.f3m.image.understand.perspective
+package ru.reo7sp.f3m.image
 
-import ru.reo7sp.f3m.math.geometry.Point
+import ru.reo7sp.f3m.math.geometry.{Point, Size}
 
-import scala.collection.SetLike
-import scala.collection.generic.GenericSetTemplate
-import scala.collection.immutable.HashSet
+trait ImageCompanion[T <: Image] {
+  def apply(size: Size): T
 
-class Scenery extends HashSet[Point] with GenericSetTemplate[Point, Scenery] with SetLike[Point, Scenery]
-
-object Scenery {
-
-  implicit class TraversableOfPoint3DWrapper(c: TraversableOnce[Point]) {
-    def toScenery: Scenery = new Scenery ++ c
+  def apply(pixels: TraversableOnce[Pixel]): T = {
+    val (iter1, iter2) = pixels.toIterator.duplicate
+    val (w, h) = iter1.foldLeft((0.0, 0.0)) { case ((maxX, maxY), Pixel(Point(x, y), _)) => (maxX max x, maxY max y) }
+    apply(iter2, Size(w.toInt, h.toInt))
   }
 
+  protected def apply(iter: Iterator[Pixel], size: Size): T
+
+  implicit def imageCompanion: ImageCompanion[T] = this
 }

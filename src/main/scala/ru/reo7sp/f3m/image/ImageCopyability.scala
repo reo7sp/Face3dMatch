@@ -14,20 +14,12 @@
  *  limitations under the License.
  */
 
-package ru.reo7sp.f3m.image.understand.perspective
+package ru.reo7sp.f3m.image
 
-import ru.reo7sp.f3m.math.geometry.Point
+import ru.reo7sp.f3m.math.geometry.{Point, Rect, Size}
 
-import scala.collection.SetLike
-import scala.collection.generic.GenericSetTemplate
-import scala.collection.immutable.HashSet
+trait ImageCopyability[Repr <: Image] {
+  def size: Size
 
-class Scenery extends HashSet[Point] with GenericSetTemplate[Point, Scenery] with SetLike[Point, Scenery]
-
-object Scenery {
-
-  implicit class TraversableOfPoint3DWrapper(c: TraversableOnce[Point]) {
-    def toScenery: Scenery = new Scenery ++ c
-  }
-
+  def copy(rect: Rect = Rect(Point.zero(2), Point(size.width, size.height)), scale: Double = 1.0): Repr
 }

@@ -24,7 +24,8 @@ import scala.collection.mutable
 
 class MotionManager(val sensorManager: SensorManager) {
   private[this] var _x, _y, _z = 0.0
-  private[this] var _listeners = new mutable.ListBuffer[Point => ()]
+  private[this] var _listeners = new mutable.ListBuffer[Point => Any]
+  private[this] var _isRunning = false
 
   private[this] val _listener = new SensorEventListener {
     private[this] var _lastTime = 0L
@@ -38,7 +39,7 @@ class MotionManager(val sensorManager: SensorManager) {
 
         if (_listeners.nonEmpty) {
           val p = position
-          _listeners.par.foreach(_ (p))
+          _listeners.foreach(_(p))
         }
       }
       _lastTime = event.timestamp
@@ -49,9 +50,13 @@ class MotionManager(val sensorManager: SensorManager) {
     def reset(): Unit = _lastTime = 0
   }
 
-  def start(): Unit = sensorManager.registerListener(_listener, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_FASTEST)
+  def start(): Unit = if (!_isRunning) {
+    _isRunning = true
+    sensorManager.registerListener(_listener, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_FASTEST)
+  }
 
-  def stop(): Unit = {
+  def stop(): Unit = if (_isRunning) {
+    _isRunning = false
     sensorManager.unregisterListener(_listener)
     reset()
   }
@@ -60,10 +65,12 @@ class MotionManager(val sensorManager: SensorManager) {
 
   def reset(): Unit = {
     _listener.reset()
+    _listeners.clear()
     _x = 0
     _y = 0
     _z = 0
   }
 
-  def onMotion(callback: Point => ()) = _listeners += callback
+  def onMotion(callback: Point => Any) = _listeners += callback
+  def unregister(callback: Point => Any) = _listeners -= callback
 }

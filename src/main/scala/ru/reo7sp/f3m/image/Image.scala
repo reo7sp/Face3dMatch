@@ -16,19 +16,15 @@
 
 package ru.reo7sp.f3m.image
 
-import ru.reo7sp.f3m.math.geometry.{Point, Rect, Size}
+import ru.reo7sp.f3m.math.geometry.{Point, Size}
 
 trait Image {
-  def width: Int
-  def height: Int
+  def size: Size
 
   def apply(p: Point): Color
-  def update(p: Point, c: Color): Unit
 
-  def copy(rect: Rect = Rect(Point.zero(2), Point(width, height)), scale: Double = 1.0): Image
-
-  def rows: Iterator[Iterator[Pixel]] = (0 until height).iterator.map(y => new PixelIterator(new RowsPixelIteratorStrategy, Point(0, y)))
-  def columns: Iterator[Iterator[Pixel]] = (0 until width).iterator.map(x => new PixelIterator(new ColumnsPixelIteratorStrategy, Point(x, 0)))
+  def rows: Iterator[Iterator[Pixel]] = (0 until size.height).iterator.map(y => new PixelIterator(new RowsPixelIteratorStrategy, Point(0, y)))
+  def columns: Iterator[Iterator[Pixel]] = (0 until size.width).iterator.map(x => new PixelIterator(new ColumnsPixelIteratorStrategy, Point(x, 0)))
   def pixels: Iterator[Pixel] = new PixelIterator(new AllPixelIteratorStrategy)
 
   class PixelIterator(strategy: PixelIteratorStrategy, var point: Point = Point.zero(2)) extends Iterator[Pixel] {
@@ -46,9 +42,9 @@ trait Image {
   }
 
   class AllPixelIteratorStrategy extends PixelIteratorStrategy {
-    override def isOk(point: Point): Boolean = point.y < height
+    override def isOk(point: Point): Boolean = point.y < size.height
     override def nextAfter(oldPoint: Point): Point = {
-      if (oldPoint.x + 1 == width) {
+      if (oldPoint.x + 1 == size.width) {
         Point(0, oldPoint.y + 1)
       } else {
         Point(oldPoint.x + 1, oldPoint.y)
@@ -57,28 +53,19 @@ trait Image {
   }
 
   class RowsPixelIteratorStrategy extends PixelIteratorStrategy {
-    override def isOk(point: Point): Boolean = point.x < width
+    override def isOk(point: Point): Boolean = point.x < size.width
     override def nextAfter(oldPoint: Point): Point = oldPoint.copy(x = oldPoint.x + 1)
   }
 
   class ColumnsPixelIteratorStrategy extends PixelIteratorStrategy {
-    override def isOk(point: Point): Boolean = point.y < height
+    override def isOk(point: Point): Boolean = point.y < size.height
     override def nextAfter(oldPoint: Point): Point = oldPoint.copy(y = oldPoint.y + 1)
   }
 
 }
 
 object Image {
-  def apply(size: Size): Image = new AndroidImage(Bitmap.createBitmap(size.width, size.height, Bitmap.Config.ARGB_8888))
-
   implicit class TraversableOfPixelWrapper(i: TraversableOnce[Pixel]) {
-    def toImage: Image = {
-      val (iter1, iter2) = i.toIterator.duplicate
-      val (w, h) = iter1.foldLeft((0.0, 0.0)) { case ((maxX, maxY), Pixel(Point(x, y), _)) => (maxX max x, maxY max y) }
-      val img = Image(Size(w.toInt, h.toInt))
-      iter2.foreach { case Pixel(point, color) => img(point) = color }
-      img
-    }
+    def toImage[T <: Image](implicit companion: ImageCompanion[T]) = companion(i)
   }
-
 }

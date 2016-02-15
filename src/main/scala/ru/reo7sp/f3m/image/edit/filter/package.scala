@@ -16,20 +16,20 @@
 
 package ru.reo7sp.f3m.image.edit
 
-import ru.reo7sp.f3m.image.Color.{HSB, RGB}
+import ru.reo7sp.f3m.image.Color.HSB
 import ru.reo7sp.f3m.image.Image.TraversableOfPixelWrapper
 import ru.reo7sp.f3m.image.{Image, Pixel}
 
 package object filter {
-  def desaturated(image: Image): Image = image.pixels.map { case Pixel(point, color) =>
+  def desaturated[T <: Image](image: T) = image.pixels.map { case Pixel(point, color) =>
     Pixel(point, color.copy(v2 = 0)(HSB))
-  }.toImage
+  }.toImage[T]
 
-  def contrasted(image: Image, by: Double): Image = image.pixels.map { case Pixel(point, color) =>
+  def contrasted[T <: Image](image: T, by: Double) = image.pixels.map { case Pixel(point, color) =>
     val factor = (1.016 * (by + 1)) / (1.016 - by)
     val r = (factor * (color.red - 0.5) + 0.5) min 1 max 0
     val g = (factor * (color.green - 0.5) + 0.5) min 1 max 0
     val b = (factor * (color.blue - 0.5) + 0.5) min 1 max 0
-    Pixel(point, color.copy(v1 = r, v2 = g, v3 = b)(RGB))
-  }.toImage
+    Pixel(point, color.copy(color.a, r, g, b))
+  }.toImage[T]
 }

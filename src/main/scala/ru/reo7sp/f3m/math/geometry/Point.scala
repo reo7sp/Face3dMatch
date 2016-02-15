@@ -25,12 +25,10 @@ import scala.math.sqrt
 
 case class Point(coords: Double*) extends Seq[Double] with GenericTraversableTemplate[Double, Point] with SeqLike[Double, Point] {
   def apply(i: Int) = if (dimension > i) coords(i) else 0.0
-  def dimension = coords.size
 
   def x = apply(0)
   def y = apply(1)
   def z = apply(2)
-  def w = apply(3)
 
   def +(other: Point) = zipAll(other, 0.0, 0.0).map(t => t._1 + t._2).toPoint
   def -(other: Point) = zipAll(other, 0.0, 0.0).map(t => t._1 - t._2).toPoint
@@ -38,18 +36,19 @@ case class Point(coords: Double*) extends Seq[Double] with GenericTraversableTem
   def distanceSqr(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).foldLeft(0.0)((r, t) => r + (t._1 - t._2).squared)
   def distance(other: Point) = sqrt(distanceSqr(other))
 
-  def copy(x: Double = x, y: Double = y, z: Double = z, w: Double = w) = {
+  def copy(x: Double = x, y: Double = y, z: Double = z) = {
     val r = coords.toBuffer
     for (i <- 0 until dimension) {
       i match {
         case 0 => r(i) = x
         case 1 => r(i) = y
         case 2 => r(i) = z
-        case 3 => r(i) = w
       }
     }
     Point(r: _*)
   }
+
+  def dimension = coords.size
 
   override def iterator: Iterator[Double] = coords.iterator
   override def length: Int = coords.length

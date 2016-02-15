@@ -22,4 +22,12 @@ import scala.collection.SetLike
 import scala.collection.generic.GenericSetTemplate
 import scala.collection.immutable.HashSet
 
-case class PartialScenery(cameraPos: Point) extends HashSet[Point] with GenericSetTemplate[Point, Scenery] with SetLike[Point, Scenery]
+case class PartialScenery(cameraPos: Point) extends HashSet[Point] with GenericSetTemplate[Point, PartialScenery] with SetLike[Point, PartialScenery]
+
+object PartialScenery {
+
+  implicit class TraversableOfPoint3DWrapper(c: TraversableOnce[Point]) {
+    def toPartialScenery(cameraPos: Point): PartialScenery = new PartialScenery(cameraPos) ++ c
+  }
+
+}

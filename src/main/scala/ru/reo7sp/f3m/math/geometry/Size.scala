@@ -18,4 +18,6 @@ package ru.reo7sp.f3m.math.geometry
 
 case class Size(width: Int, height: Int) {
   def area = width * height
+
+  def toRect = Rect(Point.zero(2), Point(width, height))
 }

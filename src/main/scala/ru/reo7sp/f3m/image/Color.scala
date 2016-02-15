@@ -20,18 +20,21 @@ import ru.reo7sp.f3m.image.Color.{ColorValuesParser, RGB}
 
 import scala.math._
 
-case class Color(alpha: Double, red: Double, green: Double, blue: Double) extends Ordered[Color] {
+case class Color(argb: Int) extends Ordered[Color] {
+  val alpha = alphaInt / 255.0
+  val red = redInt / 255.0
+  val green = greenInt / 255.0
+  val blue = blueInt / 255.0
+
   require(alpha >= 0 && alpha <= 1)
   require(red >= 0 && red <= 1)
   require(green >= 0 && green <= 1)
   require(blue >= 0 && blue <= 1)
 
-  def argb = alphaInt << 24 | redInt << 16 | greenInt << 8 | blueInt
-
-  def alphaInt = (alpha * 255).toInt
-  def redInt = (red * 255).toInt
-  def greenInt = (green * 255).toInt
-  def blueInt = (blue * 255).toInt
+  def alphaInt = (argb & 0xff000000) >> 24
+  def redInt = (argb & 0x00ff0000) >> 16
+  def greenInt = (argb & 0x0000ff00) >> 8
+  def blueInt = argb & 0x000000ff
 
   def hue = {
     val min = minComponent
@@ -72,7 +75,14 @@ case class Color(alpha: Double, red: Double, green: Double, blue: Double) extend
   def differenceSqr(other: Color) = pow(other.lightness - lightness, 2) + pow(other.a - a, 2) + pow(other.b - b, 2)
   def difference(other: Color) = sqrt(differenceSqr(other))
 
-  def copy(a: Double = alpha, v1: Double = red, v2: Double = green, v3: Double = blue)(implicit parser: ColorValuesParser = RGB): Color = parser(a, v1, v2, v3)
+  def copy(a: Double = -1, v1: Double = -1, v2: Double = -1, v3: Double = -1)(implicit parser: ColorValuesParser = RGB): Color = {
+    parser(
+      if (a == -1) parser.extract(this, 0) else a,
+      if (v1 == -1) parser.extract(this, 1) else v1,
+      if (v2 == -1) parser.extract(this, 2) else v2,
+      if (v3 == -1) parser.extract(this, 3) else v3
+    )
+  }
 
   override def compare(other: Color): Int = differenceSqr(other) match {
     case 0 => 0
@@ -85,7 +95,6 @@ case class Color(alpha: Double, red: Double, green: Double, blue: Double) extend
 }
 
 object Color {
-  def apply(argb: Int): Color = new Color((argb & 0xff000000) >> 24, (argb & 0x00ff0000) >> 16, (argb & 0x0000ff00) >> 8, argb & 0x000000ff)
   def apply(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB): Color = parser(a, v1, v2, v3)
 
   implicit class IntWrapper(val i: Int) extends AnyVal {
@@ -94,16 +103,24 @@ object Color {
 
   trait ColorValuesParser {
     def apply(a: Double, v1: Double, v2: Double, v3: Double): Color
+    def extract(from: Color, valueIndex: Int): Double
   }
 
   object RGB extends ColorValuesParser {
-    override def apply(a: Double, r: Double, g: Double, b: Double): Color = new Color(a, r, g, b)
+    override def apply(a: Double, r: Double, g: Double, b: Double): Color = Color((a * 255).toInt << 24 | (r * 255).toInt << 16 | (g * 255).toInt << 8 | (b * 255).toInt)
+
+    override def extract(color: Color, valueIndex: Int): Double = valueIndex match {
+      case 0 => color.alpha
+      case 1 => color.red
+      case 2 => color.green
+      case 3 => color.blue
+    }
   }
 
   object HSB extends ColorValuesParser {
     override def apply(a: Double, h: Double, s: Double, b: Double): Color = {
       if (s == 0) {
-        new Color(a, b, b, b)
+        RGB(a, b, b, b)
       } else {
         val region = (h * 6).toInt
         val remainder = h * 6 - region
@@ -113,14 +130,21 @@ object Color {
         val t = b * (1 - s * (1 - remainder))
 
         region match {
-          case 0 => new Color(a, b, t, p)
-          case 1 => new Color(a, q, b, p)
-          case 2 => new Color(a, p, b, t)
-          case 3 => new Color(a, p, q, b)
-          case 4 => new Color(a, t, p, b)
-          case _ => new Color(a, b, p, q)
+          case 0 => RGB(a, b, t, p)
+          case 1 => RGB(a, q, b, p)
+          case 2 => RGB(a, p, b, t)
+          case 3 => RGB(a, p, q, b)
+          case 4 => RGB(a, t, p, b)
+          case _ => RGB(a, b, p, q)
         }
       }
+    }
+
+    override def extract(color: Color, valueIndex: Int): Double = valueIndex match {
+      case 0 => color.alpha
+      case 1 => color.hue
+      case 2 => color.saturation
+      case 3 => color.brightness
     }
   }
 
@@ -148,12 +172,19 @@ object Color {
       }
 
       if (s == 0) {
-        new Color(a, l, l, l)
+        RGB(a, l, l, l)
       } else {
         val q = if (l < 0.5) l * (1 + s) else l + s - l * s
         val p = 2 * l - q
-        new Color(a, hue2rgb(p, q, h + 1.0 / 3), hue2rgb(p, q, h), hue2rgb(p, q, h - 1.0 / 3))
+        RGB(a, hue2rgb(p, q, h + 1.0 / 3), hue2rgb(p, q, h), hue2rgb(p, q, h - 1.0 / 3))
       }
+    }
+
+    override def extract(color: Color, valueIndex: Int): Double = valueIndex match {
+      case 0 => color.alpha
+      case 1 => color.hue
+      case 2 => color.saturation
+      case 3 => color.lightness
     }
   }
 
@@ -161,6 +192,13 @@ object Color {
     override def apply(alpha: Double, l: Double, a: Double, b: Double): Color = {
       val s = sqrt(a * a + b * b)
       HSL(alpha, asin(a * s), s, l)
+    }
+
+    override def extract(color: Color, valueIndex: Int): Double = valueIndex match {
+      case 0 => color.alpha
+      case 1 => color.lightness
+      case 2 => color.a
+      case 3 => color.b
     }
   }
 

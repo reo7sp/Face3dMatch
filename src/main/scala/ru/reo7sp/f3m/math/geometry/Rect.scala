@@ -17,19 +17,25 @@
 package ru.reo7sp.f3m.math.geometry
 
 case class Rect(topLeft: Point, bottomRight: Point) {
-  require(topLeft.x < bottomRight.x && topLeft.y > bottomRight.y)
+  require(topLeft.x < bottomRight.x && topLeft.y < bottomRight.y)
 
   def x = topLeft.x
   def y = topLeft.y
-  def width = (topLeft.x - bottomRight.x).abs
-  def height = (topLeft.y - bottomRight.y).abs
+  def width = bottomRight.x - topLeft.x
+  def height = bottomRight.y - topLeft.y
   def area = width * height
+
+  def has(point: Point) = topLeft.x < point.x && point.x < bottomRight.x && topLeft.y < point.y && point.y < bottomRight.y
+
+  def toSize = Size(width.toInt, height.toInt)
 }
 
 object Rect {
   def apply(p1: Point, p2: Point) = new Rect(Point(p1.x min p2.x, p1.y max p2.y), Point(p1.x max p2.x, p1.y min p2.y))
 
-  implicit class PointWrapper(val p: Point) {
+  implicit class PointWrapper(p: Point) {
+    def in(rect: Rect) = rect.has(p)
+
     def toRect(other: Point) = Rect(p, other)
   }
 
