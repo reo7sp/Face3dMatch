@@ -21,35 +21,12 @@ import ru.reo7sp.f3m.math.NumExtensions.DoubleWrapper
 import ru.reo7sp.f3m.math.geometry.Point
 
 import scala.collection.mutable
-import scala.language.reflectiveCalls
 
 class MotionManager(val sensorManager: SensorManager) {
   private[this] var _x, _y, _z = 0.0
   private[this] var _listeners = new mutable.ListBuffer[Point => Any]
   private[this] var _isRunning = false
-
-  private[this] val _listener = new SensorEventListener {
-    private[this] var _lastTime = 0L
-
-    override def onSensorChanged(event: SensorEvent): Unit = {
-      if (_lastTime != 0) {
-        val dt = (event.timestamp - _lastTime) * 1.0e9
-        _x += event.values(0) * dt.squared / 2
-        _y += event.values(1) * dt.squared / 2
-        _z += event.values(2) * dt.squared / 2
-
-        if (_listeners.nonEmpty) {
-          val p = position
-          _listeners.foreach(_(p))
-        }
-      }
-      _lastTime = event.timestamp
-    }
-
-    override def onAccuracyChanged(sensor: Sensor, accuracy: Int): Unit = ()
-
-    def reset(): Unit = _lastTime = 0
-  }
+  private[this] val _listener = new MotionListener
 
   def start(): Unit = if (!_isRunning) {
     _isRunning = true
@@ -74,4 +51,27 @@ class MotionManager(val sensorManager: SensorManager) {
 
   def onMotion(callback: Point => Any) = _listeners += callback
   def unregister(callback: Point => Any) = _listeners -= callback
+
+  private class MotionListener extends SensorEventListener {
+    private[this] var _lastTime = 0L
+
+    override def onSensorChanged(event: SensorEvent): Unit = {
+      if (_lastTime != 0) {
+        val dt = (event.timestamp - _lastTime) * 1.0e9
+        _x += event.values(0) * dt.squared / 2
+        _y += event.values(1) * dt.squared / 2
+        _z += event.values(2) * dt.squared / 2
+
+        if (_listeners.nonEmpty) {
+          val p = position
+          _listeners.foreach(_(p))
+        }
+      }
+      _lastTime = event.timestamp
+    }
+
+    override def onAccuracyChanged(sensor: Sensor, accuracy: Int): Unit = ()
+
+    def reset(): Unit = _lastTime = 0
+  }
 }

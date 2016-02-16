@@ -118,9 +118,5 @@
 -keep class ru.reo7sp.f3m.ui.MainActivity { <init>(...); }
 
 -dontobfuscate
--dontoptimize
--keepattributes Signature
--printseeds target/seeds.txt
--printusage target/usage.txt
 -dontwarn scala.collection.**
 -dontwarn org.scaloid.**

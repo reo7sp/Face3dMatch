@@ -50,7 +50,7 @@ class CapturingActivity extends SActivity {
 
   private def acquireCamera(): Camera = {
     try { {
-      val camera = Camera.open(1)
+      val camera = Camera.open()
       onDestroy(camera.release())
       camera
     }
