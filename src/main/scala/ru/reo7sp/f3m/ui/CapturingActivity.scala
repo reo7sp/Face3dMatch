@@ -17,40 +17,61 @@
 package ru.reo7sp.f3m.ui
 
 import android.hardware.Camera
+import android.hardware.Camera.CameraInfo
 import org.scaloid.common._
 import ru.reo7sp.f3m.camera.{CameraCapturer, CameraPreview, ReconstructionImagesGrabber}
 import ru.reo7sp.f3m.image.understand.perspective.Scenery
 import ru.reo7sp.f3m.motion.MotionManager
-import ru.reo7sp.f3m.ui.CapturingActivity.FunctionWrapper
 
+import scala.collection.mutable
+import scala.util.Random
 import scala.util.control.NonFatal
 
+//noinspection ScalaDeprecation
 class CapturingActivity extends SActivity {
-  private[this] val _camera = acquireCamera()
-  private[this] val _motionManager = new MotionManager(sensorManager)
-  private[this] val _grabber = new ReconstructionImagesGrabber(new CameraCapturer(_camera), _motionManager)
-  private[this] val _callback = getIntent.getSerializableExtra("callback").asInstanceOf[FunctionWrapper]
+  private[this] var _camera: Camera = null
+  private[this] var _motionManager: MotionManager = null
+  private[this] var _grabber: ReconstructionImagesGrabber = null
+  private[this] var _callbackId: Int = 0 // HACK
 
   onCreate {
+    _camera = acquireCamera()
+    _motionManager = new MotionManager(sensorManager)
+    _grabber = new ReconstructionImagesGrabber(new CameraCapturer(_camera), _motionManager)
+    _callbackId = getIntent.getIntExtra("callbackId", 0) // HACK
+
     contentView = new SVerticalLayout {
       STextView("Перемещайте телефон вдоль одной линии")
       new CameraPreview(_camera).here
       new SLinearLayout {
-        SButton("Отмена", finish())
+        SButton("Отмена", {
+          CapturingActivity._actionsQueue.remove(_callbackId) // HACK
+          finish()
+        })
         SButton("Готово", {
+          val callback = CapturingActivity._actionsQueue.remove(_callbackId).get // HACK
           _grabber.stopGrabbing()
-          _callback(_grabber.compute)
+          callback(_grabber.compute)
           finish()
         })
       }.wrap.here
     }
+
     _grabber.startGrabbing()
     onDestroy(_grabber.stopGrabbing())
   }
 
   private def acquireCamera(): Camera = {
+    def getIdOfFrontCamera = {
+      (0 until Camera.getNumberOfCameras).find { id =>
+        val info = new CameraInfo
+        Camera.getCameraInfo(id, info)
+        info.facing == CameraInfo.CAMERA_FACING_FRONT
+      }.getOrElse(0)
+    }
+
     try { {
-      val camera = Camera.open()
+      val camera = Camera.open(getIdOfFrontCamera)
       onDestroy(camera.release())
       camera
     }
@@ -64,9 +85,12 @@ class CapturingActivity extends SActivity {
 }
 
 object CapturingActivity {
+  private val _actionsQueue = new mutable.HashMap[Int, Scenery => Any] // HACK
 
-  implicit class FunctionWrapper(c: Scenery => Any) extends Serializable {
-    def apply(scenery: Scenery) = c(scenery)
+  def queueAction(action: Scenery => Any) = {
+    // HACK
+    val id = Random.nextInt()
+    _actionsQueue(id) = action
+    id
   }
-
 }

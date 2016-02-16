@@ -23,6 +23,8 @@ import ru.reo7sp.f3m.math.geometry.Point
 import scala.collection.mutable
 
 class MotionManager(val sensorManager: SensorManager) {
+  require(sensorManager != null)
+
   private[this] var _x, _y, _z = 0.0
   private[this] var _listeners = new mutable.ListBuffer[Point => Any]
   private[this] var _isRunning = false
@@ -30,7 +32,7 @@ class MotionManager(val sensorManager: SensorManager) {
 
   def start(): Unit = if (!_isRunning) {
     _isRunning = true
-    sensorManager.registerListener(_listener, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_FASTEST)
+    sensorManager.registerListener(_listener, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_GAME)
   }
 
   def stop(): Unit = if (_isRunning) {

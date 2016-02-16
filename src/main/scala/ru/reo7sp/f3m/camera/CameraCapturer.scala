@@ -23,7 +23,10 @@ import ru.reo7sp.f3m.image.AndroidImage
 
 import scala.concurrent.{Future, Promise}
 
+//noinspection ScalaDeprecation
 class CameraCapturer(val camera: Camera) {
+  require(camera != null)
+
   def capture(): Future[AndroidImage] = {
     val p = Promise[AndroidImage]
     camera.takePicture(null, null, new PictureCallback {

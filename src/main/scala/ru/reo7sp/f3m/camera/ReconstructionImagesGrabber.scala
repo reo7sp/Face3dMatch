@@ -28,6 +28,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManager: MotionManager) {
+  require(_cameraCapturer != null)
+  require(_motionManager != null)
+
   val partialSceneries = new mutable.ListBuffer[PartialScenery]
 
   def startGrabbing(): Unit = {

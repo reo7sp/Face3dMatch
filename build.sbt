@@ -3,6 +3,7 @@ name := "Face3dMatch"
 // compile options
 javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 scalaVersion := "2.11.7"
+scalacOptions in Compile ++= Seq("-optimise")
 
 // android
 import android.Keys._
@@ -10,8 +11,7 @@ minSdkVersion in Android := "16"
 targetSdkVersion in Android := "23"
 platformTarget in Android := "android-23"
 dexMulti in Android := true
-proguardOptions in Android ++= Seq("-dontobfuscate", "-dontwarn scala.collection.**", "-dontwarn org.scaloid.**"
-)
+proguardOptions in Android ++= Seq("-dontobfuscate", "-dontwarn scala.collection.**", "-dontwarn org.scaloid.**")
 
 // dependencies
 libraryDependencies ++= Seq(
