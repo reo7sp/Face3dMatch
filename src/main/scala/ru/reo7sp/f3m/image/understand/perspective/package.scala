@@ -25,10 +25,12 @@ package object perspective {
       partialScenery.points.map(Line(partialScenery.cameraPos, _))
     }
 
-    lines.flatMap { line =>
+    val points = lines.flatMap { line =>
       lines.map((line, _))
     }.map { case (line1, line2) =>
       line1 findIntersection line2
-    }.filter(_.nonEmpty).map(_.get).seq.toScenery
+    }.filter(_.nonEmpty).map(_.get)
+
+    points.seq.toScenery
   }
 }

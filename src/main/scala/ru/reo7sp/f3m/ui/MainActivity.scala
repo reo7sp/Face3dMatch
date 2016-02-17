@@ -17,7 +17,9 @@
 package ru.reo7sp.f3m.ui
 
 import android.content.Intent
+import android.widget.Button
 import org.scaloid.common._
+import ru.reo7sp.f3m.R
 import ru.reo7sp.f3m.data.AuthDataStorage
 import ru.reo7sp.f3m.image.understand.perspective.Scenery
 
@@ -45,15 +47,14 @@ class MainActivity extends SActivity {
   }
 
   onCreate {
-    contentView = new SVerticalLayout {
-      SButton("Установить", {
-        val intent = new Intent().putExtra("callbackId", CapturingActivity.queueAction(_installButtonCallback))
-        intent.start[CapturingActivity]
-      })
-      SButton("Разблокировать", {
-        val intent = new Intent().putExtra("callbackId", CapturingActivity.queueAction(_unlockButtonCallback))
-        intent.start[CapturingActivity]
-      })
+    setContentView(R.layout.mainactivity)
+    find[Button](R.id.setButton).onClick {
+      val intent = new Intent().putExtra("callbackId", CapturingActivity.queueAction(_installButtonCallback))
+      intent.start[CapturingActivity]
+    }
+    find[Button](R.id.tryButton).onClick {
+      val intent = new Intent().putExtra("callbackId", CapturingActivity.queueAction(_unlockButtonCallback))
+      intent.start[CapturingActivity]
     }
   }
 }

@@ -18,7 +18,10 @@ package ru.reo7sp.f3m.ui
 
 import android.hardware.Camera
 import android.hardware.Camera.CameraInfo
+import android.view.View
+import android.widget.Button
 import org.scaloid.common._
+import ru.reo7sp.f3m.R
 import ru.reo7sp.f3m.camera.{CameraCapturer, CameraPreview, ReconstructionImagesGrabber}
 import ru.reo7sp.f3m.image.understand.perspective.Scenery
 import ru.reo7sp.f3m.motion.MotionManager
@@ -40,25 +43,25 @@ class CapturingActivity extends SActivity {
     _grabber = new ReconstructionImagesGrabber(new CameraCapturer(_camera), _motionManager)
     _callbackId = getIntent.getIntExtra("callbackId", 0) // HACK
 
-    contentView = new SVerticalLayout {
-      STextView("Перемещайте телефон вдоль одной линии")
-      new CameraPreview(_camera).here
-      new SLinearLayout {
-        SButton("Отмена", {
-          CapturingActivity._actionsQueue.remove(_callbackId) // HACK
-          finish()
-        })
-        SButton("Готово", {
-          val callback = CapturingActivity._actionsQueue.remove(_callbackId).get // HACK
-          _grabber.stopGrabbing()
-          callback(_grabber.compute)
-          finish()
-        })
-      }.wrap.here
+    setContentView(R.layout.capturingactivity)
+    find[CameraPreview](R.id.cameraPreview).camera = _camera
+    find[Button](R.id.cancelButton).onClick {
+      CapturingActivity._actionsQueue.remove(_callbackId) // HACK
+      finish()
     }
+    find[Button](R.id.startButton).onClick {
+      _grabber.startGrabbing()
+      onDestroy(_grabber.stopGrabbing())
 
-    _grabber.startGrabbing()
-    onDestroy(_grabber.stopGrabbing())
+      find[Button](R.id.startButton).setVisibility(View.GONE)
+      find[Button](R.id.stopButton).setVisibility(View.VISIBLE)
+    }
+    find[Button](R.id.stopButton).onClick {
+      val callback = CapturingActivity._actionsQueue.remove(_callbackId).get // HACK
+      _grabber.stopGrabbing()
+      callback(_grabber.compute)
+      finish()
+    }
   }
 
   private def acquireCamera(): Camera = {
@@ -70,11 +73,10 @@ class CapturingActivity extends SActivity {
       }.getOrElse(0)
     }
 
-    try { {
+    try {
       val camera = Camera.open(getIdOfFrontCamera)
       onDestroy(camera.release())
       camera
-    }
     } catch {
       case NonFatal(e) =>
         error(e.toString)

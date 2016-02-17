@@ -34,9 +34,10 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
   val partialSceneries = new mutable.ListBuffer[PartialScenery]
 
   def startGrabbing(): Unit = {
+    _cameraCapturer.setupFaceDetection()
     _motionManager.start()
     _motionManager.onMotion { position =>
-      _cameraCapturer.capture().onSuccess { case image =>
+      _cameraCapturer.captureFace().onSuccess { case image =>
         Future {
           val scaledImage = image.copy(scale = 0.01).toArrayImage
           val editedImage = contrasted(desaturated(scaledImage), by = 10)

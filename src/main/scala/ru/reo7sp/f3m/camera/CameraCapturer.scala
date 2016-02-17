@@ -18,22 +18,49 @@ package ru.reo7sp.f3m.camera
 
 import android.graphics.BitmapFactory
 import android.hardware.Camera
-import android.hardware.Camera.PictureCallback
+import android.hardware.Camera.{Face, FaceDetectionListener, PictureCallback}
 import ru.reo7sp.f3m.image.AndroidImage
+import ru.reo7sp.f3m.math.geometry.{Point, Rect}
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.Promise
 
 //noinspection ScalaDeprecation
 class CameraCapturer(val camera: Camera) {
   require(camera != null)
 
-  def capture(): Future[AndroidImage] = {
-    val p = Promise[AndroidImage]
+  def setupFaceDetection(): Unit = camera.setFaceDetectionListener(MyFaceListener)
+
+  def capture() = {
+    val promise = Promise[AndroidImage]
     camera.takePicture(null, null, new PictureCallback {
       override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = {
-        p.success(new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)))
+        promise.success(new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)))
       }
     })
-    p.future
+    promise.future
+  }
+
+  def captureFace() = {
+    val promise = Promise[AndroidImage]
+    MyFaceListener.onFace { face =>
+      camera.takePicture(null, null, new PictureCallback {
+        override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = {
+          val rect = Rect(Point(face.rect.left, face.rect.top), Point(face.rect.right, face.rect.bottom))
+          promise.success(new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)).copy(rect))
+        }
+      })
+    }
+    promise.future
+  }
+
+  private object MyFaceListener extends FaceDetectionListener {
+    private[this] var _callback: Face => Any = null
+
+    override def onFaceDetection(faces: Array[Face], camera: Camera): Unit = if (_callback != null && faces.nonEmpty) {
+      _callback(faces(0))
+      _callback = null
+    }
+
+    def onFace(callback: Face => Any): Unit = _callback = callback
   }
 }

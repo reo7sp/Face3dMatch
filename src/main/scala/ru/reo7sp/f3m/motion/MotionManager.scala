@@ -28,23 +28,22 @@ class MotionManager(val sensorManager: SensorManager) {
   private[this] var _x, _y, _z = 0.0
   private[this] var _listeners = new mutable.ListBuffer[Point => Any]
   private[this] var _isRunning = false
-  private[this] val _listener = new MotionListener
 
   def start(): Unit = if (!_isRunning) {
     _isRunning = true
-    sensorManager.registerListener(_listener, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_GAME)
+    sensorManager.registerListener(MySensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_GAME)
   }
 
   def stop(): Unit = if (_isRunning) {
     _isRunning = false
-    sensorManager.unregisterListener(_listener)
+    sensorManager.unregisterListener(MySensorListener)
     reset()
   }
 
   def position = Point(_x, _y, _z)
 
   def reset(): Unit = {
-    _listener.reset()
+    MySensorListener.reset()
     _listeners.clear()
     _x = 0
     _y = 0
@@ -54,7 +53,7 @@ class MotionManager(val sensorManager: SensorManager) {
   def onMotion(callback: Point => Any) = _listeners += callback
   def unregister(callback: Point => Any) = _listeners -= callback
 
-  private class MotionListener extends SensorEventListener {
+  private object MySensorListener extends SensorEventListener {
     private[this] var _lastTime = 0L
 
     override def onSensorChanged(event: SensorEvent): Unit = {

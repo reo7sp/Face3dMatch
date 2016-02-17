@@ -34,19 +34,18 @@ case class Line(initialPoint: Point, params: Double*) {
 
   def findIntersection(other: Line) = {
     val (answer, ansCount) = LinearEquationsSystem(
-      Matrix[Double](Size(dimension, 2), (params ++ other.params).map(Right(_))),
-      Seq(Var[Double]('x), Var[Double]('y), Var[Double]('z)),
-      Seq(0.0, 0.0)
+      A = Matrix(Size(dimension, 2), (params ++ other.params).map(Right(_))),
+      x = Seq(Var[Double]('x), Var[Double]('y), Var[Double]('z)),
+      b = Seq(0.0, 0.0)
     ).solve
 
-    if (ansCount == LinearEquationsSystem.SolutionCount.Zero) {
-      None
-    } else {
-      Some(answer.map(_.value.get).toPoint)
-    }
+    if (ansCount == LinearEquationsSystem.SolutionCount.Zero) None else Option(answer.map(_.value.get).toPoint)
   }
 }
 
 object Line {
-  def apply(first: Point, second: Point): Line = Line(first, first.coords.zip(second.coords).map(t => t._2 - t._1): _*)
+  def apply(first: Point, second: Point): Line = {
+    val vectorCoords = (first.coords zip second.coords).map { case (x1, x2) => x2 - x1 }
+    Line(first, vectorCoords: _*)
+  }
 }

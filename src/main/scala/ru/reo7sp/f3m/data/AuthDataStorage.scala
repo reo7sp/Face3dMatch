@@ -32,10 +32,9 @@ class AuthDataStorage(val fileName: String = "authdata.json")(implicit ctx: Cont
   def load: Option[Scenery] = {
     implicit val formats = DefaultFormats
 
-    try { {
+    try {
       val points = JsonMethods.parse(Source.fromInputStream(ctx.openFileInput(fileName)).mkString).children.map(_.extract[Point])
-      Some(Scenery(points))
-    }
+      Option(Scenery(points))
     } catch {
       case NonFatal(_) => None
     }
@@ -45,12 +44,11 @@ class AuthDataStorage(val fileName: String = "authdata.json")(implicit ctx: Cont
     implicit val formats = DefaultFormats
 
     val writer = new OutputStreamWriter(ctx.openFileOutput(fileName, Context.MODE_PRIVATE))
-    try { {
+    try {
       val json = scenery.points.map { point =>
         ("x" -> point.x) ~ ("y" -> point.y) ~ ("z" -> point.z)
       }
       writer.write(JsonMethods.compact(JsonMethods.render(json)))
-    }
     } finally {
       writer.close()
     }

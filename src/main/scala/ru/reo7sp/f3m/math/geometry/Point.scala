@@ -28,8 +28,8 @@ case class Point(coords: Double*) {
   def y = apply(1)
   def z = apply(2)
 
-  def +(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map(t => t._1 + t._2).toPoint
-  def -(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map(t => t._1 - t._2).toPoint
+  def +(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map { case (x1, x2) => x1 + x2 }.toPoint
+  def -(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map { case (x1, x2) => x1 - x2 }.toPoint
 
   def distanceSqr(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).foldLeft(0.0)((r, t) => r + (t._1 - t._2).squared)
   def distance(other: Point) = sqrt(distanceSqr(other))
@@ -37,15 +37,11 @@ case class Point(coords: Double*) {
   def map(f: Double => Double) = Point(coords.map(f): _*)
 
   def copy(x: Double = x, y: Double = y, z: Double = z) = {
-    val r = coords.toBuffer
-    for (i <- 0 until dimension) {
-      i match {
-        case 0 => r(i) = x
-        case 1 => r(i) = y
-        case 2 => r(i) = z
-      }
-    }
-    Point(r: _*)
+    val newCoords = coords.toBuffer
+    newCoords(0) = x
+    newCoords(1) = y
+    newCoords(2) = z
+    Point(newCoords: _*)
   }
 
   def dimension = coords.size

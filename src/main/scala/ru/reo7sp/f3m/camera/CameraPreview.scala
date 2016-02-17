@@ -18,47 +18,83 @@ package ru.reo7sp.f3m.camera
 
 import java.io.IOException
 
+import android.content.Context
 import android.hardware.Camera
-import android.view.SurfaceHolder
+import android.util.AttributeSet
 import android.view.SurfaceHolder.Callback
-import org.scaloid.common.{SSurfaceView, _}
+import android.view.{SurfaceHolder, SurfaceView}
+import org.scaloid.common._
 
+import scala.collection.JavaConversions._
 import scala.util.control.NonFatal
 
 //noinspection ScalaDeprecation
-class CameraPreview(val camera: Camera)(implicit context: android.content.Context, parentVGroup: TraitViewGroup[_] = null) extends SSurfaceView {
+class CameraPreview(val context: Context, val attrs: AttributeSet) extends SurfaceView(context, attrs) {
+  private[this] var _camera: Camera = null
   private[this] val _surfaceHolder = getHolder
 
-  _surfaceHolder.addCallback(new Callback {
+  def camera = _camera
+
+  def camera_=(camera: Camera): Unit = {
+    _camera = camera
+
+    _surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
+    _surfaceHolder.addCallback(MyCallback)
+  }
+
+  private object MyCallback extends Callback {
     private[this] var _isRunning = false
 
     private def startPreview(holder: SurfaceHolder): Unit = {
-      try { {
+      def getBestPreviewSize(width: Int, height: Int, parameters: Camera#Parameters) = {
+        var result: Camera#Size = null
+        for (size <- parameters.getSupportedPreviewSizes) {
+          if (size.width <= width && size.height <= height) {
+            if (result == null) {
+              result = size
+            } else {
+              val resultArea = result.width * result.height
+              val newArea = size.width * size.height
+              if (newArea > resultArea) {
+                result = size
+              }
+            }
+          }
+        }
+        Option(result)
+        }
+
+      try {
         if (_isRunning) {
           camera.stopPreview()
         } else {
           _isRunning = true
+          val parameters = camera.getParameters
+          val sizeOpt = getBestPreviewSize(getWidth, getHeight, parameters)
+          sizeOpt foreach { size =>
+            parameters.setPreviewSize(size.height, size.width)
+            camera.setParameters(parameters)
+            camera.setDisplayOrientation(90)
+          }
         }
         camera.setPreviewDisplay(holder)
         camera.startPreview()
-      }
       } catch {
         case e: IOException => error(e.toString)(LoggerTag("CameraPreview"))
       }
-    }
+      }
 
     override def surfaceCreated(holder: SurfaceHolder): Unit = startPreview(holder)
 
     override def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int): Unit = if (holder.getSurface != null) {
-      try { {
+      try {
         camera.stopPreview()
-      }
       } catch {
         case NonFatal(e) => ()
       }
       startPreview(holder)
-    }
+      }
 
     override def surfaceDestroyed(holder: SurfaceHolder): Unit = ()
-  })
+  }
 }
