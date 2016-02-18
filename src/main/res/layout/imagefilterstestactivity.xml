@@ -34,14 +34,20 @@
 			<Button
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:text="contrastButton"
+					android:text="contrast"
 					android:id="@+id/contrastButton"/>
 
 			<Button
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:text="desaturateButton"
+					android:text="desaturate"
 					android:id="@+id/desaturateButton"/>
+
+			<Button
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="scale"
+					android:id="@+id/scaleButton"/>
 		</LinearLayout>
 	</HorizontalScrollView>
 

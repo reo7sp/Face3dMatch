@@ -28,24 +28,34 @@ import ru.reo7sp.f3m.image.edit.filter._
 
 class ImageFiltersTestActivity extends SActivity {
   onCreate {
-    var bitmapDrawable = new BitmapDrawable(getResources, BitmapFactory.decodeResource(getResources, R.drawable.lena))
-
     setContentView(R.layout.imagefilterstestactivity)
+
     val editText = find[EditText](R.id.editText)
+    def getInputNumber = try {
+      editText.getText.toString.toDouble
+    } catch {
+      case _: Throwable => 1.0
+    }
+
     val surfaceView = find[SurfaceView](R.id.surfaceView)
+    var bitmapDrawable = new BitmapDrawable(getResources, BitmapFactory.decodeResource(getResources, R.drawable.lena))
     surfaceView.setBackground(bitmapDrawable)
+
     find[Button](R.id.desaturateButton).onClick {
-      bitmapDrawable = new BitmapDrawable(getResources, desaturated(new AndroidImage(bitmapDrawable.getBitmap)).handle)
+      val image = new AndroidImage(bitmapDrawable.getBitmap)
+      bitmapDrawable = new BitmapDrawable(getResources, desaturated(image))
       surfaceView.setBackground(bitmapDrawable)
     }
+
     find[Button](R.id.contrastButton).onClick {
-      val byStr = editText.getText.toString
-      val by = try {
-        byStr.toDouble
-      } catch {
-        case _: Throwable => 1.0
-      }
-      bitmapDrawable = new BitmapDrawable(getResources, contrasted(new AndroidImage(bitmapDrawable.getBitmap), by).handle)
+      val image = new AndroidImage(bitmapDrawable.getBitmap)
+      bitmapDrawable = new BitmapDrawable(getResources, contrasted(image, by = getInputNumber))
+      surfaceView.setBackground(bitmapDrawable)
+    }
+
+    find[Button](R.id.scaleButton).onClick {
+      val image = new AndroidImage(bitmapDrawable.getBitmap)
+      bitmapDrawable = new BitmapDrawable(getResources, image.copy(size = image.size * getInputNumber))
       surfaceView.setBackground(bitmapDrawable)
     }
   }
