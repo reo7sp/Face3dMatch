@@ -61,14 +61,14 @@ object AndroidImage extends ImageCompanion[AndroidImage] {
     case RGB565 => Bitmap.Config.RGB_565
   }
 
-  def apply(size: Size, config: Bitmap.Config) = new AndroidImage(Bitmap.createBitmap(size.width, size.height, config))
+  def ofSize(size: Size, config: Bitmap.Config): AndroidImage = new AndroidImage(Bitmap.createBitmap(size.width, size.height, config))
 
-  def apply(pixels: TraversableOnce[Pixel], size: Size, config: Bitmap.Config) = {
-    val img = AndroidImage(size, config)
+  def fromPixels(pixels: TraversableOnce[Pixel], size: Size, config: Bitmap.Config): AndroidImage = {
+    val img = AndroidImage.ofSize(size, config)
     pixels.foreach(img.update)
     img
   }
 
-  override def apply(size: Size) = AndroidImage(size, Bitmap.Config.ARGB_8888)
-  override def apply(pixels: TraversableOnce[Pixel], size: Size) = AndroidImage(pixels, size, Bitmap.Config.ARGB_8888)
+  override def ofSize(size: Size): AndroidImage = AndroidImage.ofSize(size, Bitmap.Config.ARGB_8888)
+  override def fromPixels(pixels: TraversableOnce[Pixel], size: Size): AndroidImage = AndroidImage.fromPixels(pixels, size, Bitmap.Config.ARGB_8888)
 }

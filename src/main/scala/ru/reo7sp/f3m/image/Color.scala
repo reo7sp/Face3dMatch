@@ -99,11 +99,26 @@ class Color(val alpha: Double, val red: Double, val green: Double, val blue: Dou
 }
 
 object Color {
-  def apply(value: Int)(implicit parser: ColorIntegerValueParser = ARGB8888) = parser(value)
-  def apply(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB) = parser(a, v1, v2, v3)
+  val BLACK = new Color(1, 0, 0, 0)
+  val DARK_GRAY = new Color(1, 0.25, 0.25, 0.25)
+  val GRAY = new Color(1, 0.5, 0.5, 0.5)
+  val LIGHT_GRAY = new Color(1, 0.75, 0.75, 0.75)
+  val WHITE = new Color(1, 1, 1, 1)
+  val MAGENTA = new Color(1, 1, 0, 1)
+  val RED = new Color(1, 1, 0, 0)
+  val YELLOW = new Color(1, 1, 1, 0)
+  val GREEN = new Color(1, 0, 1, 0)
+  val CYAN = new Color(1, 0, 1, 1)
+  val BLUE = new Color(1, 0, 0, 1)
+  val TRANSPARENT = new Color(0, 0, 0, 0)
+
+  def apply(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB): Color = parser(a, v1, v2, v3)
+  def fromComponents(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB): Color = apply(a, v1, v2, v3)(parser)
+
+  def fromInteger(value: Int)(implicit parser: ColorIntegerValueParser = ARGB8888): Color = parser(value)
 
   implicit class IntWrapper(val i: Int) extends AnyVal {
-    def toColor(implicit parser: ColorIntegerValueParser = ARGB8888) = Color(i)(parser)
+    def toColor(implicit parser: ColorIntegerValueParser = ARGB8888) = Color.fromInteger(i)(parser)
   }
 
   trait ColorValuesParser {

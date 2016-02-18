@@ -19,15 +19,15 @@ package ru.reo7sp.f3m.image
 import ru.reo7sp.f3m.math.geometry.{Point, Size}
 
 trait ImageCompanion[T <: Image] {
-  def apply(size: Size): T
+  def ofSize(size: Size): T
 
-  def apply(pixels: TraversableOnce[Pixel]): T = {
+  def fromPixels(pixels: TraversableOnce[Pixel]): T = {
     val (iter1, iter2) = pixels.toIterator.duplicate
     val (w, h) = iter1.foldLeft((0.0, 0.0)) { case ((maxX, maxY), Pixel(Point(x, y), _)) => (maxX max x, maxY max y) }
-    apply(iter2, Size(w.toInt, h.toInt))
+    fromPixels(iter2, Size(w.toInt, h.toInt))
   }
 
-  def apply(iter: TraversableOnce[Pixel], size: Size): T
+  def fromPixels(iter: TraversableOnce[Pixel], size: Size): T
 
   implicit def imageCompanion: ImageCompanion[T] = this
 }

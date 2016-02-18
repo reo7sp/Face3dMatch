@@ -35,12 +35,14 @@ object NumExtensions {
       }
       r
     }
+    def clamp(min: Int, max: Int) = i min max max min
   }
 
   implicit class DoubleWrapper(val i: Double) extends AnyVal {
     def squared = i * i
     def cubed = i * i * i
     def **(exp: Double) = scala.math.pow(i, exp)
+    def clamp(min: Double, max: Double) = i min max max min
   }
 
 }
