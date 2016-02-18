@@ -21,5 +21,5 @@ import ru.reo7sp.f3m.math.geometry.{Point, Rect, Size}
 trait ImageCopyability[Repr <: Image] {
   def size: Size
 
-  def copy(rect: Rect = Rect(Point.zero(2), Point(size.width, size.height)), scale: Double = 1.0): Repr
+  def copy(rect: Rect = Rect(Point.zero(2), Point(size.width, size.height)), size: Size = size): Repr
 }

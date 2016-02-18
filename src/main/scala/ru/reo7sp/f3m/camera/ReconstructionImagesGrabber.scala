@@ -21,6 +21,7 @@ import ru.reo7sp.f3m.image.edit.filter._
 import ru.reo7sp.f3m.image.understand.content._
 import ru.reo7sp.f3m.image.understand.perspective.PartialScenery.TraversableOfPoint3DWrapper
 import ru.reo7sp.f3m.image.understand.perspective.{PartialScenery, _}
+import ru.reo7sp.f3m.math.geometry.Size
 import ru.reo7sp.f3m.motion.MotionManager
 
 import scala.collection.mutable
@@ -39,10 +40,10 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
     _motionManager.onMotion { position =>
       _cameraCapturer.captureFace().onSuccess { case image =>
         Future {
-          val scaledImage = image.copy(scale = 0.01).toArrayImage
-          val editedImage = contrasted(desaturated(scaledImage), by = 10)
+          val scaledImage = image.copy(size = Size(32, 32 / image.size.aspectRatio)).toArrayImage
+          val editedImage = contrasted(desaturated(scaledImage), by = 8)
           partialSceneries.synchronized {
-            partialSceneries += findEdges(editedImage).toPartialScenery(position)
+            partialSceneries += findEdges(editedImage).toPartialScenery(cameraPos = position)
           }
         }
       }

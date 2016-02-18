@@ -20,7 +20,7 @@ import ru.reo7sp.f3m.image.{Image, Pixel}
 import ru.reo7sp.f3m.math.geometry.Point
 
 package object content {
-  def findEdges(image: Image)(implicit edgeThreshold: Int = 10): Iterator[Point] = {
+  def findEdges(image: Image, edgeThreshold: Double = 0.25): Iterator[Point] = {
     val thresholdSqr = edgeThreshold * edgeThreshold
 
     val a = (image.pixels zip image.pixels.drop(1)).filter { case (Pixel(_, color1), Pixel(_, color2)) =>

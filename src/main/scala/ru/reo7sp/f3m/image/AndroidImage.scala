@@ -31,13 +31,13 @@ class AndroidImage(val handle: Bitmap) extends Image with ImageMutability with I
   override def apply(p: Point) = handle.getPixel(p.x.toInt, p.y.toInt).toColor(handle.getConfig)
   override def update(p: Point, c: Color) = handle.setPixel(p.x.toInt, p.y.toInt, c.toInt(handle.getConfig))
 
-  override def copy(rect: Rect, scale: Double): AndroidImage = {
+  override def copy(rect: Rect, size: Size): AndroidImage = {
     var h = handle
     if (rect != size.toRect) {
       h = Bitmap.createBitmap(h, rect.x.toInt, rect.y.toInt, rect.width.toInt, rect.height.toInt)
     }
-    if (scale != 1) {
-      h = Bitmap.createScaledBitmap(h, (rect.width * scale).toInt, (rect.height * scale).toInt, true)
+    if (size != this.size) {
+      h = Bitmap.createScaledBitmap(h, size.width, size.height, true)
     }
     new AndroidImage(h)
   }

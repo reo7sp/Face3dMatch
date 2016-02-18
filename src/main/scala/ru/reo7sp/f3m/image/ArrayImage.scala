@@ -26,11 +26,12 @@ class ArrayImage(val size: Size) extends Image with ImageMutability with ImageCo
   override def apply(p: Point): Color = handle.getOrElse(p, Color.TRANSPARENT)
   override def update(p: Point, c: Color): Unit = handle(p) = c
 
-  override def copy(rect: Rect, scale: Double): ArrayImage = {
+  override def copy(rect: Rect, size: Size): ArrayImage = {
+    val (scaleX, scaleY) = size / this.size
     val pixels = handle.iterator.filter { case (point, _) =>
       rect.has(point)
     }.map { case (point, color) =>
-      Pixel(point.copy(point.x * scale, point.y * scale), color)
+      Pixel(point.copy(point.x * scaleX, point.y * scaleY), color)
     }
     ArrayImage fromPixels pixels
   }

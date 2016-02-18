@@ -17,7 +17,20 @@
 package ru.reo7sp.f3m.math.geometry
 
 case class Size(width: Int, height: Int) {
+  require(width >= 0 && height >= 0)
+
+  def +(other: Size): Size = Size(width + other.width, height + other.height)
+  def -(other: Size): Size = Size(width - other.width, height - other.height)
+  def *(scaleX: Double, scaleY: Double): Size = Size((width * scaleX).toInt, (height * scaleY).toInt)
+  def /(scaleX: Double, scaleY: Double): Size = this *(1 / scaleX, 1 / scaleY)
+  def *(scale: Double): Size = this *(scale, scale)
+  def /(scale: Double): Size = this /(scale, scale)
+
+  def /(other: Size): (Double, Double) = (width.toDouble / other.width, height.toDouble / other.height)
+
   def area = width * height
+  def aspectRatio = width / height
+  def invAspectRatio = 1 / aspectRatio
 
   def toRect = Rect(Point.zero(2), Point(width, height))
 }
