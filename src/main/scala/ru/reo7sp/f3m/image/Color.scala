@@ -66,7 +66,7 @@ class Color(val alpha: Double, val red: Double, val green: Double, val blue: Dou
   def a = sin(hue * 2 * Pi) * saturation
   def b = cos(hue * 2 * Pi) * saturation
 
-  def differenceSqr(other: Color) = pow(other.lightness - lightness, 2) + pow(other.a - a, 2) + pow(other.b - b, 2)
+  def differenceSqr(other: Color) = (other.lightness - lightness).squared + (other.a - a).squared + (other.b - b).squared
   def difference(other: Color) = sqrt(differenceSqr(other))
 
   def copy(a: Double = -1, v1: Double = -1, v2: Double = -1, v3: Double = -1)(implicit parser: ColorValuesParser = RGB): Color = {

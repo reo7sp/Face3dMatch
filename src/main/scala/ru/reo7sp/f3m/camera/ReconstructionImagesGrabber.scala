@@ -40,8 +40,8 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
     _motionManager.onMotion { position =>
       _cameraCapturer.captureFace().onSuccess { case image =>
         Future {
-          val scaledImage = image.copy(size = Size(32, 32 / image.size.aspectRatio)).toArrayImage
-          val editedImage = contrasted(desaturated(scaledImage), by = 8)
+          val scaledImage = image.copy(size = Size(64, 64 / image.size.aspectRatio)).toArrayImage
+          val editedImage = contrasted(desaturated(scaledImage), by = 4)
           partialSceneries.synchronized {
             partialSceneries += findEdges(editedImage).toPartialScenery(cameraPos = position)
           }
