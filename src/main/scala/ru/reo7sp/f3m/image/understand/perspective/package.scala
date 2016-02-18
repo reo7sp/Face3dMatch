@@ -28,7 +28,7 @@ package object perspective {
     val points = lines.flatMap { line =>
       lines.map((line, _))
     }.map { case (line1, line2) =>
-      line1 findIntersection line2
+      if (line1 != line2) line1 findIntersection line2 else None
     }.filter(_.nonEmpty).map(_.get)
 
     points.seq.toScenery

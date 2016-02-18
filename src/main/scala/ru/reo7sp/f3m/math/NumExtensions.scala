@@ -21,7 +21,7 @@ object NumExtensions {
   implicit class IntWrapper(val i: Int) extends AnyVal {
     def squared = i * i
     def cubed = i * i * i
-    def **(exp: Double) = scala.math.pow(i, exp)
+    def **(exp: Double) = math.pow(i, exp)
     def **(exp: Int) = {
       var r = 1
       var a = i
@@ -41,7 +41,7 @@ object NumExtensions {
   implicit class DoubleWrapper(val i: Double) extends AnyVal {
     def squared = i * i
     def cubed = i * i * i
-    def **(exp: Double) = scala.math.pow(i, exp)
+    def **(exp: Double) = math.pow(i, exp)
     def clamp(min: Double, max: Double) = i min max max min
   }
 

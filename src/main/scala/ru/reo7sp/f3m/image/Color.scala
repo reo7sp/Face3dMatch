@@ -17,6 +17,7 @@
 package ru.reo7sp.f3m.image
 
 import ru.reo7sp.f3m.image.Color.{ARGB8888, ColorIntegerValueParser, ColorValuesParser, RGB}
+import ru.reo7sp.f3m.math.NumExtensions.DoubleWrapper
 
 import scala.math._
 
@@ -112,10 +113,11 @@ object Color {
   val BLUE = new Color(1, 0, 0, 1)
   val TRANSPARENT = new Color(0, 0, 0, 0)
 
-  def apply(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB): Color = parser(a, v1, v2, v3)
-  def fromComponents(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB): Color = apply(a, v1, v2, v3)(parser)
+  def fromComponents(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB) = parser(a, v1, v2, v3)
+  def fromInteger(value: Int)(implicit parser: ColorIntegerValueParser = ARGB8888) = parser(value)
 
-  def fromInteger(value: Int)(implicit parser: ColorIntegerValueParser = ARGB8888): Color = parser(value)
+  def apply(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB): Color = fromComponents(a, v1, v2, v3)(parser)
+  def unapply(color: Color): Option[(Double, Double, Double, Double)] = Some((color.alpha, color.red, color.green, color.blue))
 
   implicit class IntWrapper(val i: Int) extends AnyVal {
     def toColor(implicit parser: ColorIntegerValueParser = ARGB8888) = Color.fromInteger(i)(parser)
@@ -127,14 +129,16 @@ object Color {
   }
 
   object RGB extends ColorValuesParser {
-    override def apply(a: Double, r: Double, g: Double, b: Double): Color = new Color(a, r, g, b)
+    override def apply(a: Double, r: Double, g: Double, b: Double): Color = {
+      new Color(1 /*a.clamp(0, 1)*/ , r.clamp(0, 1), g.clamp(0, 1), b.clamp(0, 1)) // HACK
+    }
     override def apply(color: Color, valueIndex: Int): Double = color.productElement(valueIndex).asInstanceOf[Double]
   }
 
   object HSB extends ColorValuesParser {
     override def apply(a: Double, h: Double, s: Double, b: Double): Color = {
       if (s == 0) {
-        new Color(a, b, b, b)
+        RGB(a, b, b, b)
       } else {
         val region = (h * 6).toInt
         val remainder = h * 6 - region
@@ -144,12 +148,12 @@ object Color {
         val t = b * (1 - s * (1 - remainder))
 
         region match {
-          case 0 => new Color(a, b, t, p)
-          case 1 => new Color(a, q, b, p)
-          case 2 => new Color(a, p, b, t)
-          case 3 => new Color(a, p, q, b)
-          case 4 => new Color(a, t, p, b)
-          case _ => new Color(a, b, p, q)
+          case 0 => RGB(a, b, t, p)
+          case 1 => RGB(a, q, b, p)
+          case 2 => RGB(a, p, b, t)
+          case 3 => RGB(a, p, q, b)
+          case 4 => RGB(a, t, p, b)
+          case _ => RGB(a, b, p, q)
         }
       }
     }
@@ -186,11 +190,11 @@ object Color {
       }
 
       if (s == 0) {
-        new Color(a, l, l, l)
+        RGB(a, l, l, l)
       } else {
         val q = if (l < 0.5) l * (1 + s) else l + s - l * s
         val p = 2 * l - q
-        new Color(a, hue2rgb(p, q, h + 1.0 / 3), hue2rgb(p, q, h), hue2rgb(p, q, h - 1.0 / 3))
+        RGB(a, hue2rgb(p, q, h + 1.0 / 3), hue2rgb(p, q, h), hue2rgb(p, q, h - 1.0 / 3))
       }
     }
 
@@ -227,7 +231,7 @@ object Color {
       val redInt = (value & 0x00ff0000) >> 16
       val greenInt = (value & 0x0000ff00) >> 8
       val blueInt = value & 0x000000ff
-      new Color(alphaInt / 255.0, redInt / 255.0, greenInt / 255.0, blueInt / 255.0)
+      RGB(alphaInt / 255.0, redInt / 255.0, greenInt / 255.0, blueInt / 255.0)
     }
 
     override def apply(color: Color): Int = color.alphaInt << 24 | color.redInt << 16 | color.greenInt << 8 | color.blueInt
@@ -239,14 +243,14 @@ object Color {
       val redInt = (value & 0x0f00) >> 8
       val greenInt = (value & 0x00f0) >> 4
       val blueInt = value & 0x000f
-      new Color(alphaInt / 127.0, redInt / 127.0, greenInt / 127.0, blueInt / 127.0)
+      RGB(alphaInt / 127.0, redInt / 127.0, greenInt / 127.0, blueInt / 127.0)
     }
 
     override def apply(color: Color): Int = color.alphaInt >> 1 << 12 | color.redInt >> 1 << 8 | color.greenInt >> 1 << 4 | color.blueInt >> 1
   }
 
   object ALPHA8 extends ColorIntegerValueParser {
-    override def apply(value: Int): Color = new Color(value / 255.0, 0, 0, 0)
+    override def apply(value: Int): Color = RGB(value / 255.0, 0, 0, 0)
     override def apply(color: Color): Int = color.alphaInt
   }
 
@@ -255,7 +259,7 @@ object Color {
       val redInt = (value & 0xf800) >> 11
       val greenInt = (value & 0x7e0) >> 6
       val blueInt = value & 0x1f
-      new Color(1, redInt / 31.0, greenInt / 63.0, blueInt / 31.0)
+      RGB(1, redInt / 31.0, greenInt / 63.0, blueInt / 31.0)
     }
 
     override def apply(color: Color): Int = (color.red * 31).toInt << 11 | (color.green * 63).toInt << 6 | (color.blue * 31).toInt
