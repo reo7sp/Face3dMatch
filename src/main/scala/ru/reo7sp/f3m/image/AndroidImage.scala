@@ -71,4 +71,8 @@ object AndroidImage extends ImageCompanion[AndroidImage] {
 
   override def ofSize(size: Size): AndroidImage = AndroidImage.ofSize(size, Bitmap.Config.ARGB_8888)
   override def fromPixels(pixels: TraversableOnce[Pixel], size: Size): AndroidImage = AndroidImage.fromPixels(pixels, size, Bitmap.Config.ARGB_8888)
+
+  implicit class ImageToAndroidImageWrapper(img: Image) {
+    def toAndroidImage = AndroidImage.fromPixels(img.pixels, img.size)
+  }
 }

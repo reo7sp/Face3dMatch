@@ -43,13 +43,7 @@ trait Image {
 
   class AllPixelIteratorStrategy extends PixelIteratorStrategy {
     override def isOk(point: Point): Boolean = point.y < size.height
-    override def nextAfter(oldPoint: Point): Point = {
-      if (oldPoint.x + 1 == size.width) {
-        Point(0, oldPoint.y + 1)
-      } else {
-        Point(oldPoint.x + 1, oldPoint.y)
-      }
-    }
+    override def nextAfter(oldPoint: Point): Point = if (oldPoint.x + 1 != size.width) Point(oldPoint.x + 1, oldPoint.y) else Point(0, oldPoint.y + 1)
   }
 
   class RowsPixelIteratorStrategy extends PixelIteratorStrategy {

@@ -33,4 +33,14 @@ case class Size(width: Int, height: Int) {
   def invAspectRatio = 1 / aspectRatio
 
   def toRect = Rect(Point.zero(2), Point(width, height))
+
+  def points = new Iterator[Point] {
+    private[this] var _point = Point.zero(2)
+
+    override def hasNext: Boolean = _point.y < height
+    override def next(): Point = {
+      _point = if (_point.x + 1 != width) Point(_point.x + 1, _point.y) else Point(0, _point.y + 1)
+      _point
+    }
+  }
 }

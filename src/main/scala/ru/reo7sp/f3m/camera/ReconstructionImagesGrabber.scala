@@ -16,7 +16,7 @@
 
 package ru.reo7sp.f3m.camera
 
-import ru.reo7sp.f3m.image.ArrayImage.AndroidImageWrapper
+import ru.reo7sp.f3m.image.ArrayImage.ImageToArrayImageWrapper
 import ru.reo7sp.f3m.image.edit.filter._
 import ru.reo7sp.f3m.image.understand.content._
 import ru.reo7sp.f3m.image.understand.perspective.PartialScenery.TraversableOfPoint3DWrapper

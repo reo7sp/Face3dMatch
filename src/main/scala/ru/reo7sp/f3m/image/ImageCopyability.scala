@@ -16,10 +16,10 @@
 
 package ru.reo7sp.f3m.image
 
-import ru.reo7sp.f3m.math.geometry.{Point, Rect, Size}
+import ru.reo7sp.f3m.math.geometry.{Rect, Size}
 
 trait ImageCopyability[Repr <: Image] {
   def size: Size
 
-  def copy(rect: Rect = Rect(Point.zero(2), Point(size.width, size.height)), size: Size = size): Repr
+  def copy(rect: Rect = size.toRect, size: Size = size): Repr
 }

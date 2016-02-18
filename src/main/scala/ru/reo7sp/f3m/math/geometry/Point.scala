@@ -31,16 +31,18 @@ case class Point(coords: Double*) {
   def +(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map { case (x1, x2) => x1 + x2 }.toPoint
   def -(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map { case (x1, x2) => x1 - x2 }.toPoint
 
-  def distanceSqr(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).foldLeft(0.0)((r, t) => r + (t._1 - t._2).squared)
+  def distanceSqr(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).foldLeft(0.0) { case (result, (x1, x2)) => result + (x1 - x2).squared }
   def distance(other: Point) = sqrt(distanceSqr(other))
 
   def map(f: Double => Double) = Point(coords.map(f): _*)
 
   def copy(x: Double = x, y: Double = y, z: Double = z) = {
     val newCoords = coords.toBuffer
-    newCoords(0) = x
-    newCoords(1) = y
-    newCoords(2) = z
+    newCoords.indices.foreach {
+      case 0 => newCoords(0) = x
+      case 1 => newCoords(1) = y
+      case 2 => newCoords(2) = z
+    }
     Point(newCoords: _*)
   }
 

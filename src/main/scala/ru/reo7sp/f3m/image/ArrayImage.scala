@@ -23,17 +23,16 @@ import scala.collection.mutable
 class ArrayImage(val size: Size) extends Image with ImageMutability with ImageCopyability[ArrayImage] {
   val handle = new mutable.HashMap[Point, Color]
 
-  override def apply(p: Point): Color = handle.getOrElse(p, Color.TRANSPARENT)
+  override def apply(p: Point): Color = handle.getOrElse(p, Color.BLACK)
   override def update(p: Point, c: Color): Unit = handle(p) = c
 
   override def copy(rect: Rect, size: Size): ArrayImage = {
-    val (scaleX, scaleY) = size / this.size
-    val pixels = handle.iterator.filter { case (point, _) =>
-      rect.has(point)
-    }.map { case (point, color) =>
-      Pixel(point.copy(point.x * scaleX, point.y * scaleY), color)
+    val (scaleX, scaleY) = rect.toSize / size
+    val img = ArrayImage ofSize size
+    size.points.foreach { point =>
+      img(point) = this (Point((rect.x + point.x * scaleX).floor, (rect.y + point.y * scaleY).floor))
     }
-    ArrayImage fromPixels pixels
+    img
   }
 }
 
@@ -42,11 +41,11 @@ object ArrayImage extends ImageCompanion[ArrayImage] {
 
   override def fromPixels(pixels: TraversableOnce[Pixel], size: Size): ArrayImage = {
     val img = ArrayImage ofSize size
-    pixels.foreach(img.update)
+    img.handle ++= pixels.map(pixel => (pixel.point, pixel.color))
     img
   }
 
-  implicit class AndroidImageWrapper(img: AndroidImage) {
+  implicit class ImageToArrayImageWrapper(img: Image) {
     def toArrayImage = ArrayImage.fromPixels(img.pixels, img.size)
   }
 }
