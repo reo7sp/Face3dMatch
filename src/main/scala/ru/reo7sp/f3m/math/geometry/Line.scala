@@ -16,7 +16,7 @@
 
 package ru.reo7sp.f3m.math.geometry
 
-import ru.reo7sp.f3m.math.geometry.Point.SeqOfDoubleWrapper
+import ru.reo7sp.f3m.math.geometry.Point.SeqOfDoubleToPointWrapper
 import ru.reo7sp.f3m.math.geometry.Vector._
 import ru.reo7sp.f3m.math.linear.{LinearEquationsSystem, Matrix, Var}
 

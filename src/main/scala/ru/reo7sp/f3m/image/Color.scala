@@ -17,7 +17,7 @@
 package ru.reo7sp.f3m.image
 
 import ru.reo7sp.f3m.image.Color.{ARGB8888, ColorIntegerValueParser, ColorValuesParser, RGB}
-import ru.reo7sp.f3m.math.NumExtensions.DoubleWrapper
+import ru.reo7sp.f3m.math.NumExtensions.DoubleExtensions
 
 import scala.math._
 
@@ -119,7 +119,7 @@ object Color {
   def apply(a: Double, v1: Double, v2: Double, v3: Double)(implicit parser: ColorValuesParser = RGB): Color = fromComponents(a, v1, v2, v3)(parser)
   def unapply(color: Color): Option[(Double, Double, Double, Double)] = Some((color.alpha, color.red, color.green, color.blue))
 
-  implicit class IntWrapper(val i: Int) extends AnyVal {
+  implicit class IntToColorWrapper(val i: Int) extends AnyVal {
     def toColor(implicit parser: ColorIntegerValueParser = ARGB8888) = Color.fromInteger(i)(parser)
   }
 

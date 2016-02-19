@@ -16,8 +16,8 @@
 
 package ru.reo7sp.f3m.math.geometry
 
-import ru.reo7sp.f3m.math.NumExtensions.DoubleWrapper
-import ru.reo7sp.f3m.math.geometry.Point.SeqOfDoubleWrapper
+import ru.reo7sp.f3m.math.NumExtensions.DoubleExtensions
+import ru.reo7sp.f3m.math.geometry.Point.SeqOfDoubleToPointWrapper
 
 import scala.math.sqrt
 
@@ -55,7 +55,7 @@ case class Point(coords: Double*) {
 object Point {
   def zero(dimension: Int) = Point(Seq.fill(dimension)(0.0): _*)
 
-  implicit class SeqOfDoubleWrapper(s: Seq[Double]) {
+  implicit class SeqOfDoubleToPointWrapper(s: Seq[Double]) {
     def toPoint = Point(s: _*)
   }
 

@@ -28,7 +28,6 @@ import ru.reo7sp.f3m.motion.MotionManager
 
 import scala.collection.mutable
 import scala.util.Random
-import scala.util.control.NonFatal
 
 //noinspection ScalaDeprecation
 class CapturingActivity extends SActivity {
@@ -73,16 +72,9 @@ class CapturingActivity extends SActivity {
       }.getOrElse(0)
     }
 
-    try {
-      val camera = Camera.open(getIdOfFrontCamera)
-      onDestroy(camera.release())
-      camera
-    } catch {
-      case NonFatal(e) =>
-        error(e.toString)
-        alert("No camera!", e.toString)
-        throw e
-    }
+    val camera = Camera.open(getIdOfFrontCamera)
+    onDestroy(camera.release())
+    camera
   }
 }
 

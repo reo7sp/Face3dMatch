@@ -18,7 +18,7 @@ package ru.reo7sp.f3m.math
 
 object NumExtensions {
 
-  implicit class IntWrapper(val i: Int) extends AnyVal {
+  implicit class IntExtensions(val i: Int) extends AnyVal {
     def squared = i * i
     def cubed = i * i * i
     def **(exp: Double) = math.pow(i, exp)
@@ -38,7 +38,7 @@ object NumExtensions {
     def clamp(min: Int, max: Int) = i min max max min
   }
 
-  implicit class DoubleWrapper(val i: Double) extends AnyVal {
+  implicit class DoubleExtensions(val i: Double) extends AnyVal {
     def squared = i * i
     def cubed = i * i * i
     def **(exp: Double) = math.pow(i, exp)

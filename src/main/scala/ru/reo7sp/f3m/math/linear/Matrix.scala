@@ -54,7 +54,7 @@ case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) {
 object Matrix {
   type MatrixElement[T] = Either[Var[T], T]
 
-  implicit class ArrayOfArrayOfMatrixElementWrapper[T](arr: Array[Array[MatrixElement[T]]]) {
+  implicit class ArrayOfArrayOfMatrixElementToMatrixWrapper[T](arr: Array[Array[MatrixElement[T]]]) {
     def toMatrix = {
       val width = if (arr.nonEmpty) arr(0).length else 0
       val height = arr.length

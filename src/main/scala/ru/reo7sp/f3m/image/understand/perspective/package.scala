@@ -16,7 +16,7 @@
 
 package ru.reo7sp.f3m.image.understand
 
-import ru.reo7sp.f3m.image.understand.perspective.Scenery.TraversableOfPoint3DWrapper
+import ru.reo7sp.f3m.image.understand.perspective.Scenery.TraversableOfPoint3dToSceneryWrapper
 import ru.reo7sp.f3m.math.geometry.Line
 
 package object perspective {

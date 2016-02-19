@@ -17,7 +17,7 @@
 package ru.reo7sp.f3m.motion
 
 import android.hardware.{Sensor, SensorEvent, SensorEventListener, SensorManager}
-import ru.reo7sp.f3m.math.NumExtensions.DoubleWrapper
+import ru.reo7sp.f3m.math.NumExtensions.DoubleExtensions
 import ru.reo7sp.f3m.math.geometry.Point
 
 import scala.collection.mutable

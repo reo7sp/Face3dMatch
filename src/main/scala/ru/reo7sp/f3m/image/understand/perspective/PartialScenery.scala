@@ -22,7 +22,7 @@ case class PartialScenery(cameraPos: Point, points: Set[Point])
 
 object PartialScenery {
 
-  implicit class TraversableOfPoint3DWrapper(c: TraversableOnce[Point]) {
+  implicit class TraversableOfPoint3dToPartialSceneryWrapper(c: TraversableOnce[Point]) {
     def toPartialScenery(cameraPos: Point): PartialScenery = PartialScenery(cameraPos, c.toSet)
   }
 

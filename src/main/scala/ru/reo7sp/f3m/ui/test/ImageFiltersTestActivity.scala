@@ -49,7 +49,7 @@ class ImageFiltersTestActivity extends SActivity {
 
     find[Button](R.id.contrastButton).onClick {
       val image = new AndroidImage(bitmapDrawable.getBitmap)
-      bitmapDrawable = new BitmapDrawable(getResources, contrasted(image, value = getInputNumber))
+      bitmapDrawable = new BitmapDrawable(getResources, contrasted(image, factor = getInputNumber))
       surfaceView.setBackground(bitmapDrawable)
     }
 

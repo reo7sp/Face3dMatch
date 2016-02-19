@@ -25,7 +25,7 @@ case class Scenery(points: Set[Point]) {
 object Scenery {
   def apply(c: TraversableOnce[Point]): Scenery = Scenery(c.toSet)
 
-  implicit class TraversableOfPoint3DWrapper(c: TraversableOnce[Point]) {
+  implicit class TraversableOfPoint3dToSceneryWrapper(c: TraversableOnce[Point]) {
     def toScenery = Scenery(c)
   }
 

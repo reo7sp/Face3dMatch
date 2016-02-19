@@ -16,25 +16,37 @@
 
 package ru.reo7sp.f3m.camera
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.hardware.Camera
 import android.hardware.Camera.{Face, FaceDetectionListener, PictureCallback}
+import org.scaloid.common._
 import ru.reo7sp.f3m.image.AndroidImage
 import ru.reo7sp.f3m.math.geometry.{Point, Rect}
 
 import scala.concurrent.Promise
+import scala.util.control.NonFatal
 
 //noinspection ScalaDeprecation
-class CameraCapturer(val camera: Camera) {
+class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
   require(camera != null)
 
-  def setupFaceDetection(): Unit = camera.setFaceDetectionListener(MyFaceListener)
+  implicit val loggerTag = LoggerTag("CameraCapturer")
+
+  def startFaceDetection(): Unit = {
+    camera.setFaceDetectionListener(MyFaceListener)
+    camera.startFaceDetection()
+  }
+
+  def stopFaceDetection(): Unit = camera.stopFaceDetection()
 
   def capture() = {
     val promise = Promise[AndroidImage]
     camera.takePicture(null, null, new PictureCallback {
-      override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = {
+      override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = try {
         promise.success(new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)))
+      } catch {
+        case NonFatal(e) => error(s"Can't take picture $e")
       }
     })
     promise.future
@@ -44,13 +56,15 @@ class CameraCapturer(val camera: Camera) {
     val promise = Promise[(AndroidImage, Face)]
     MyFaceListener.onFace { face =>
       camera.takePicture(null, null, new PictureCallback {
-        override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = {
+        override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = try {
           var image = new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length))
           if (settings.eyesBaselineParallelToSide) {
-            //            Point(face.leftEye.x, face.rightEye.x)
-            //            image = rotate(image, )
+            //Point(face.leftEye.x, face.rightEye.x)
+            //image = rotate(image, ???)
           }
           promise.success((image, face))
+        } catch {
+          case NonFatal(e) => error(s"Can't take picture $e")
         }
       })
     }
@@ -61,10 +75,12 @@ class CameraCapturer(val camera: Camera) {
     val promise = Promise[(AndroidImage, Face)]
     MyFaceListener.onFace { face =>
       camera.takePicture(null, null, new PictureCallback {
-        override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = {
+        override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = try {
           val rect = Rect(Point(face.rect.left, face.rect.top), Point(face.rect.right, face.rect.bottom))
           val image = new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)).copy(rect)
           promise.success((image, face))
+        } catch {
+          case NonFatal(e) => error(s"Can't take picture $e")
         }
       })
     }
