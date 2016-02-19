@@ -20,34 +20,40 @@ import android.content.Intent
 import android.widget.Button
 import org.scaloid.common._
 import ru.reo7sp.f3m.R
-import ru.reo7sp.f3m.data.AuthDataStorage
 import ru.reo7sp.f3m.image.understand.perspective.Scenery
+import ru.reo7sp.f3m.util.AndroidExecutionContext.executionContext
+
+import scala.util.{Failure, Success}
 
 class MainActivity extends SActivity {
-  private[this] val _authDataStorage = new AuthDataStorage
+  private[this] val _authDataStorage = new AuthDataStorageWithUI
 
   private[this] val _installButtonCallback = { scenery: Scenery =>
-    _authDataStorage.save(scenery)
-    toast("Сохранено")
+    _authDataStorage.saveWithUI(scenery).onComplete {
+      case Success(_) => toast("Сохранено")
+      case Failure(e) => alert("Ошибка", e.toString)
+    }
   }
 
   private[this] val _unlockButtonCallback = { scenery: Scenery =>
-    _authDataStorage.load match {
-      case Some(savedScenery) =>
-        val similarity = savedScenery similarityWith scenery
-        if (similarity > 0.5) {
-          toast(s"Успешно. ${(similarity * 100).toInt}%")
-        } else {
-          toast(s"Не успешно. ${(similarity * 100).toInt}%")
-        }
-      case None =>
-        _authDataStorage.save(scenery)
-        toast("Успешно")
+    _authDataStorage.loadWithUI.onComplete {
+      case Success(sceneryOpt) => sceneryOpt match {
+        case Some(savedScenery) =>
+          val similarity = savedScenery similarityWith scenery
+          if (similarity > 0.5) {
+            toast(s"Успешно. ${(similarity * 100).toInt}%")
+          } else {
+            toast(s"Не успешно. ${(similarity * 100).toInt}%")
+          }
+        case None => _installButtonCallback(scenery)
+      }
+      case Failure(e) => alert("Ошибка", e.toString)
     }
   }
 
   onCreate {
     setContentView(R.layout.mainactivity)
+
     find[Button](R.id.setButton).onClick {
       val intent = new Intent().putExtra("callbackId", CapturingActivity.queueAction(_installButtonCallback))
       intent.start[CapturingActivity]
