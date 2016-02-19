@@ -16,14 +16,12 @@
 
 package ru.reo7sp.f3m.math.linear
 
-import scala.collection.immutable.Queue
-
 case class Var[T](name: Symbol, var value: Option[T] = None) extends Iterable[T] {
-  private val _operations = new Queue[T => T]
+  //  private val _operations = new Queue[T => T]
 
   def get = if (value.isDefined) {
     var result: T = value.get
-    _operations.foreach(op => result = op(result))
+    //    _operations.foreach(op => result = op(result))
     result
   } else None
 

@@ -19,9 +19,7 @@ package ru.reo7sp.f3m.math.linear
 import ru.reo7sp.f3m.math.geometry.Size
 import ru.reo7sp.f3m.math.linear.Matrix.MatrixElement
 
-import scala.reflect.ClassTag
-
-case class Matrix[T: ClassTag](size: Size, elements: Seq[MatrixElement[T]]) {
+case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) {
   require(size.area == elements.size)
 
   type Element = MatrixElement[T]
@@ -47,11 +45,8 @@ case class Matrix[T: ClassTag](size: Size, elements: Seq[MatrixElement[T]]) {
     size.width match {
       case 0 => 0
       case 1 => apply(0, 0)
-      case i => if (classOf[T] == classOf[Double]) {
-        // HACK
-        val self = this.asInstanceOf[Matrix[Double]]
-        ???
-      } else None
+      case 2 => ???
+      case 3 => ???
     }
   } else None
 }
