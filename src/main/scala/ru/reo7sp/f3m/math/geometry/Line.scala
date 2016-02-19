@@ -16,11 +16,12 @@
 
 package ru.reo7sp.f3m.math.geometry
 
+import ru.reo7sp.f3m.math.NumExtensions._
 import ru.reo7sp.f3m.math.geometry.Point.SeqOfDouble
 import ru.reo7sp.f3m.math.linear.{LinearEquationsSystem, Matrix, Var}
 
 case class Line(initialPoint: Point, params: Double*) {
-  def dimension = params.size
+  def dimension = params.size - 1
 
   def apply(point: Point) = {
     val values = (point.coords, initialPoint.coords, params).zipped.toIterable
@@ -40,6 +41,29 @@ case class Line(initialPoint: Point, params: Double*) {
     ).solve
 
     if (ansCount == LinearEquationsSystem.SolutionCount.Zero) None else Option(answer.map(_.value.get).toPoint)
+  }
+
+  def commonPerpendicularWith(other: Line) = {
+    val vector1 = params
+    val vector2 = other.params
+    val perpendicular = Seq(
+      vector1(1) * vector2(2) - vector1(2) * vector1(1),
+      vector1(0) * vector2(2) - vector1(2) * vector1(0),
+      vector1(0) * vector2(1) - vector1(1) * vector1(0)
+    )
+    val perpendicularLength = math.sqrt(perpendicular.map(_.squared).sum)
+    perpendicular.map(_ / perpendicularLength)
+  }
+
+  def findMinDistance(other: Line) = {
+    val perpendicular = this commonPerpendicularWith other
+    val deltaVector = (initialPoint.coords zip other.initialPoint.coords).map { case (x1, x2) => x1 - x2 }
+    (perpendicular zip deltaVector).map { case (x1, x2) => x1 * x2 }.sum.abs
+  }
+
+  def findMinDistancePoint(other: Line): Point = {
+    val distance = this findMinDistance other
+    ???
   }
 }
 

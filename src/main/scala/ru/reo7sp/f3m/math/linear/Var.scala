@@ -16,7 +16,28 @@
 
 package ru.reo7sp.f3m.math.linear
 
+import scala.collection.immutable.Queue
+
 case class Var[T](name: Symbol, var value: Option[T] = None) extends Iterable[T] {
+  private val _operations = new Queue[T => T]
+
+  def get = if (value.isDefined) {
+    var result: T = value.get
+    _operations.foreach(op => result = op(result))
+    result
+  } else None
+
+  def set(t: T) = value = Option(t)
+  def unset() = value = None
+
+  def modifyWith(op: T => T) = {
+    ???
+  }
+
+  def |(op: T => T) = this modifyWith op
+
+  def clearOperations() = Var(name, value)
+
   override def iterator = new Iterator[T] {
     override def hasNext = value.nonEmpty
     override def next() = value.get
