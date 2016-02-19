@@ -26,10 +26,12 @@ package object perspective {
     }
 
     val points = lines.flatMap { line =>
-      lines.map((line, _))
+      lines.map((_, line))
+    }.filter { case (line1, line2) =>
+      line1 != line2
     }.map { case (line1, line2) =>
-      if (line1 != line2) line1 findIntersection line2 else None
-    }.filter(_.nonEmpty).map(_.get)
+      line1 findMinDistancePoint line2
+    }
 
     points.seq.toScenery
   }

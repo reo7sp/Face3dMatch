@@ -17,7 +17,7 @@
 package ru.reo7sp.f3m.math.geometry
 
 import ru.reo7sp.f3m.math.NumExtensions.DoubleWrapper
-import ru.reo7sp.f3m.math.geometry.Point.SeqOfDouble
+import ru.reo7sp.f3m.math.geometry.Point.SeqOfDoubleWrapper
 
 import scala.math.sqrt
 
@@ -28,13 +28,16 @@ case class Point(coords: Double*) {
   def y = apply(1)
   def z = apply(2)
 
-  def +(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map { case (x1, x2) => x1 + x2 }.toPoint
-  def -(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).map { case (x1, x2) => x1 - x2 }.toPoint
-
-  def distanceSqr(other: Point) = coords.zipAll(other.coords, 0.0, 0.0).foldLeft(0.0) { case (result, (x1, x2)) => result + (x1 - x2).squared }
-  def distance(other: Point) = sqrt(distanceSqr(other))
-
   def map(f: Double => Double) = Point(coords.map(f): _*)
+  def zip(other: Point) = coords.zipAll(other.coords, 0.0, 0.0)
+
+  def +(other: Point) = (this zip other).map { case (x1, x2) => x1 + x2 }.toPoint
+  def -(other: Point) = (this zip other).map { case (x1, x2) => x1 - x2 }.toPoint
+  def *(d: Double) = map(_ * d)
+  def /(d: Double) = this * (1 / d)
+
+  def distanceSqr(other: Point) = (this zip other).map { case (x1, x2) => (x1 - x2).squared }.sum
+  def distance(other: Point) = sqrt(distanceSqr(other))
 
   def copy(x: Double = x, y: Double = y, z: Double = z) = {
     val newCoords = coords.toBuffer
@@ -52,7 +55,7 @@ case class Point(coords: Double*) {
 object Point {
   def zero(dimension: Int) = Point(Seq.fill(dimension)(0.0): _*)
 
-  implicit class SeqOfDouble(s: Seq[Double]) {
+  implicit class SeqOfDoubleWrapper(s: Seq[Double]) {
     def toPoint = Point(s: _*)
   }
 
