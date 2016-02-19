@@ -16,17 +16,19 @@
 
 package ru.reo7sp.f3m.camera
 
-import ru.reo7sp.f3m.image.ArrayImage._
+import android.graphics.PointF
+import android.media.FaceDetector
+import ru.reo7sp.f3m.image.ArrayImage.{ImageToArrayImageWrapper, TraversableOfPixelToImageTWrapper, imageCompanion}
 import ru.reo7sp.f3m.image.Pixel
 import ru.reo7sp.f3m.image.edit.filter._
 import ru.reo7sp.f3m.image.understand.content._
-import ru.reo7sp.f3m.image.understand.perspective.PartialScenery.TraversableOfPoint3DWrapper
+import ru.reo7sp.f3m.image.understand.perspective.PartialScenery.TraversableOfPoint3dToPartialSceneryWrapper
 import ru.reo7sp.f3m.image.understand.perspective.{PartialScenery, _}
-import ru.reo7sp.f3m.math.geometry.Size
+import ru.reo7sp.f3m.math.geometry.{Point, Rect, Size}
 import ru.reo7sp.f3m.motion.MotionManager
+import ru.reo7sp.f3m.util.AndroidExecutionContext.executionContext
 
 import scala.collection.mutable
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManager: MotionManager) {
@@ -36,19 +38,38 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
   val partialSceneries = new mutable.ListBuffer[PartialScenery]
 
   def startGrabbing(): Unit = {
-    _cameraCapturer.setupFaceDetection()
     _motionManager.start()
     _motionManager.onMotion { position =>
-      _cameraCapturer.captureWithFace().onSuccess { case (image, face) =>
+      _cameraCapturer.capture().onSuccess { case image =>
+        def acquireDistance = {
+          val a = Array(0f, 0f, 0f)
+          _cameraCapturer.camera.getParameters.getFocusDistances(a)
+          a(1)
+        }
+
         Future {
-          val scaledImage = image.copy(size = Size(64, 64 / image.size.aspectRatio)).toArrayImage
-          val filteredImage = scaledImage.pixels.filter { case Pixel(point, _) =>
-            face.rect.contains(point.x.toInt, point.y.toInt)
-          }.toImage(scaledImage.size)
-          val editedImage = contrasted(desaturated(filteredImage), value = 4)
+          val scaledImage = image.copy(size = Size(64, 64 / image.size.aspectRatio))
+
+          val faceDetector = new FaceDetector(scaledImage.size.width, scaledImage.size.height, 1)
+          val faces = new Array[FaceDetector#Face](1)
+          faceDetector.findFaces(scaledImage, faces)
+          val face = faces.head
+          val faceMidPoint = new PointF()
+          face.getMidPoint(faceMidPoint)
+          val faceWidth = face.eyesDistance()
+          val faceRect = Rect(
+            Point(faceMidPoint.x - faceWidth, faceMidPoint.y - faceWidth),
+            Point(faceMidPoint.x + faceWidth, faceMidPoint.y + faceWidth)
+          )
+
+          val filteredImage = scaledImage.toArrayImage.pixels.filter { case Pixel(point, _) => faceRect has point }.toImage(scaledImage.size)
+          val editedImage = contrasted(desaturated(filteredImage), factor = 4)
+
+          val zOffset = Point(0, 0, acquireDistance)
+          val edges = findEdges(editedImage).map(_ + position + zOffset)
 
           partialSceneries.synchronized {
-            partialSceneries += findEdges(editedImage).toPartialScenery(cameraPos = position)
+            partialSceneries += edges.toPartialScenery(cameraPos = position)
           }
         }
       }
