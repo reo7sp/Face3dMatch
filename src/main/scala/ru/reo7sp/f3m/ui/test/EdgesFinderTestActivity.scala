@@ -42,7 +42,7 @@ class EdgesFinderTestActivity extends SActivity {
       bitmapDrawable = new BitmapDrawable(getResources, scaledImage)
       surfaceView.setBackground(bitmapDrawable)
 
-      image = contrasted(desaturated(scaledImage), by = 4)
+      image = contrasted(desaturated(scaledImage), value = 4)
     }
 
     def drawDots(dots: TraversableOnce[Point]): Unit = {

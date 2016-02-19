@@ -16,7 +16,8 @@
 
 package ru.reo7sp.f3m.camera
 
-import ru.reo7sp.f3m.image.ArrayImage.ImageToArrayImageWrapper
+import ru.reo7sp.f3m.image.ArrayImage._
+import ru.reo7sp.f3m.image.Pixel
 import ru.reo7sp.f3m.image.edit.filter._
 import ru.reo7sp.f3m.image.understand.content._
 import ru.reo7sp.f3m.image.understand.perspective.PartialScenery.TraversableOfPoint3DWrapper
@@ -38,10 +39,14 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
     _cameraCapturer.setupFaceDetection()
     _motionManager.start()
     _motionManager.onMotion { position =>
-      _cameraCapturer.captureFace().onSuccess { case image =>
+      _cameraCapturer.captureWithFace().onSuccess { case (image, face) =>
         Future {
           val scaledImage = image.copy(size = Size(64, 64 / image.size.aspectRatio)).toArrayImage
-          val editedImage = contrasted(desaturated(scaledImage), by = 4)
+          val filteredImage = scaledImage.pixels.filter { case Pixel(point, _) =>
+            face.rect.contains(point.x.toInt, point.y.toInt)
+          }.toImage(scaledImage.size)
+          val editedImage = contrasted(desaturated(filteredImage), value = 4)
+
           partialSceneries.synchronized {
             partialSceneries += findEdges(editedImage).toPartialScenery(cameraPos = position)
           }

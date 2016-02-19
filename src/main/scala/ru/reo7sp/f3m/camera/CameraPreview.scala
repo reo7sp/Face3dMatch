@@ -62,7 +62,7 @@ class CameraPreview(val context: Context, val attrs: AttributeSet) extends Surfa
           }
         }
         Option(result)
-        }
+      }
 
       try {
         if (_isRunning) {
@@ -82,7 +82,7 @@ class CameraPreview(val context: Context, val attrs: AttributeSet) extends Surfa
       } catch {
         case e: IOException => error(e.toString)(LoggerTag("CameraPreview"))
       }
-      }
+    }
 
     override def surfaceCreated(holder: SurfaceHolder): Unit = startPreview(holder)
 

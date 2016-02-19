@@ -40,13 +40,31 @@ class CameraCapturer(val camera: Camera) {
     promise.future
   }
 
-  def captureFace() = {
-    val promise = Promise[AndroidImage]
+  def captureWithFace(settings: CameraCapturerFaceSettings = CameraCapturerFaceSettings()) = {
+    val promise = Promise[(AndroidImage, Face)]
+    MyFaceListener.onFace { face =>
+      camera.takePicture(null, null, new PictureCallback {
+        override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = {
+          var image = new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length))
+          if (settings.eyesBaselineParallelToSide) {
+            //            Point(face.leftEye.x, face.rightEye.x)
+            //            image = rotate(image, )
+          }
+          promise.success((image, face))
+        }
+      })
+    }
+    promise.future
+  }
+
+  def captureOnlyFace(settings: CameraCapturerFaceSettings = CameraCapturerFaceSettings()) = {
+    val promise = Promise[(AndroidImage, Face)]
     MyFaceListener.onFace { face =>
       camera.takePicture(null, null, new PictureCallback {
         override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = {
           val rect = Rect(Point(face.rect.left, face.rect.top), Point(face.rect.right, face.rect.bottom))
-          promise.success(new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)).copy(rect))
+          val image = new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)).copy(rect)
+          promise.success((image, face))
         }
       })
     }
@@ -54,13 +72,15 @@ class CameraCapturer(val camera: Camera) {
   }
 
   private object MyFaceListener extends FaceDetectionListener {
-    private[this] var _callback: Face => Any = null
+    private[this] val _callbacks = new scala.collection.mutable.ListBuffer[Face => Any]
 
-    override def onFaceDetection(faces: Array[Face], camera: Camera): Unit = if (_callback != null && faces.nonEmpty) {
-      _callback(faces(0))
-      _callback = null
+    override def onFaceDetection(faces: Array[Face], camera: Camera): Unit = if (_callbacks.nonEmpty && faces.nonEmpty) {
+      _callbacks.foreach(_ (faces(0)))
+      _callbacks.clear()
     }
 
-    def onFace(callback: Face => Any): Unit = _callback = callback
+    def onFace(callback: Face => Any): Unit = _callbacks += callback
   }
 }
+
+case class CameraCapturerFaceSettings(eyesBaselineParallelToSide: Boolean = true)
