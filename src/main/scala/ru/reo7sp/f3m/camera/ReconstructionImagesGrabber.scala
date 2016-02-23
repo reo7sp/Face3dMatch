@@ -63,7 +63,8 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
           )
 
           val filteredImage = scaledImage.toArrayImage.pixels.filter { case Pixel(point, _) => faceRect has point }.toImage(scaledImage.size)
-          val editedImage = contrasted(desaturated(filteredImage), factor = 4)
+          val croppedImage = filteredImage.copy(Rect(faceRect.topLeft.copy(x = 0), faceRect.bottomRight.copy(x = faceRect.width)))
+          val editedImage = contrasted(desaturated(croppedImage), factor = 4)
 
           val zOffset = Point(0, 0, acquireDistance)
           val edges = findEdges(editedImage, edgeThreshold = 0.1).map(_ + position + zOffset)

@@ -27,8 +27,8 @@ package object perspective {
 
     val points = lines.flatMap { line =>
       lines.map((_, line))
-    }.filter { case (line1, line2) =>
-      line1 != line2
+    }.filterNot { case (line1, line2) =>
+      line1 eq line2
     }.map { case (line1, line2) =>
       line1 findMinDistancePoint line2
     }

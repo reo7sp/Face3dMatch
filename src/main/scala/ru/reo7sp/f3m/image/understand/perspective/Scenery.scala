@@ -17,9 +17,13 @@
 package ru.reo7sp.f3m.image.understand.perspective
 
 import ru.reo7sp.f3m.math.geometry.Point
+import ru.reo7sp.f3m.math.NumExtensions._
 
 case class Scenery(points: Set[Point]) {
-  def similarityWith(other: Scenery) = points.count(other.points.contains).toDouble / points.size
+  def similarityWith(other: Scenery, threshold: Double = 8) = {
+    val thresholdSqr = threshold.squared
+    points.count(p1 => other.points.exists(p2 => (p1 distanceSqr p2) < thresholdSqr)).toDouble / points.size
+  }
 }
 
 object Scenery {

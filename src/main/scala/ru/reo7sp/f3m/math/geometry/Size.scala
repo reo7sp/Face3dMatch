@@ -32,6 +32,8 @@ case class Size(width: Int, height: Int) {
   def aspectRatio = width / height
   def invAspectRatio = 1 / aspectRatio
 
+  def transpose = Size(height, width)
+
   def toRect = Rect(Point.zero(2), Point(width, height))
 
   def points = new Iterator[Point] {

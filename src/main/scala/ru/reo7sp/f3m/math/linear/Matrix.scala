@@ -25,6 +25,16 @@ case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) {
   type Element = MatrixElement[T]
 
   def apply(i: Int, j: Int) = elements(i * width + j)
+  def getVarAt(i: Int, j: Int) = apply(i, j).left.get
+  def getValAt(i: Int, j: Int) = apply(i, j).right.get
+
+  def transpose = {
+    val newElements = elements.toBuffer
+    for (j <- 0 until height; i <- 0 until width) {
+      newElements += this(j, i)
+    }
+    Matrix(size.transpose, newElements)
+  }
 
   def width = size.width
   def height = size.width
@@ -40,27 +50,22 @@ case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) {
       }.toArray
     }.toArray
   }
-
-  def det = if (size.width == size.height && size.width <= 3) {
-    size.width match {
-      case 0 => 0
-      case 1 => apply(0, 0)
-      case 2 => ???
-      case 3 => ???
-    }
-  } else None
 }
 
 object Matrix {
   type MatrixElement[T] = Either[Var[T], T]
 
-  implicit class ArrayOfArrayOfMatrixElementToMatrixWrapper[T](arr: Array[Array[MatrixElement[T]]]) {
+  implicit class SeqOfSeqOfMatrixElementToMatrixWrapper[T](arr: Seq[Seq[MatrixElement[T]]]) {
     def toMatrix = {
-      val width = if (arr.nonEmpty) arr(0).length else 0
+      val width = if (arr.nonEmpty) arr.head.length else 0
       val height = arr.length
       val elements = arr.flatten.map(Right(_))
       Matrix(Size(width, height), elements)
     }
+  }
+
+  implicit class SeqOfMatrixElementToMatrixWrapper[T](arr: Seq[MatrixElement[T]]) {
+    def toMatrix(size: Size) = Matrix(size, arr)
   }
 
 }
