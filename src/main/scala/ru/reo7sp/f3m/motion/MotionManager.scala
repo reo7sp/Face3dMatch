@@ -65,7 +65,7 @@ class MotionManager(val sensorManager: SensorManager) {
 
         if (_listeners.nonEmpty) {
           val p = position
-          _listeners.foreach(_(p))
+          _listeners.foreach(_.apply(p))
         }
       }
       _lastTime = event.timestamp

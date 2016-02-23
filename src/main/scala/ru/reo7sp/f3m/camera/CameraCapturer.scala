@@ -22,7 +22,8 @@ import android.hardware.Camera
 import android.hardware.Camera.{Face, FaceDetectionListener, PictureCallback}
 import org.scaloid.common._
 import ru.reo7sp.f3m.image.AndroidImage
-import ru.reo7sp.f3m.math.geometry.{Point, Rect}
+import ru.reo7sp.f3m.image.edit.transform._
+import ru.reo7sp.f3m.math.geometry.{GeometricVector, Point, Rect}
 
 import scala.concurrent.Promise
 import scala.util.control.NonFatal
@@ -58,11 +59,7 @@ class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
       camera.takePicture(null, null, new PictureCallback {
         override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = try {
           var image = new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length))
-          if (settings.eyesBaselineParallelToSide) {
-            //Point(face.leftEye.x, face.rightEye.x)
-            //image = rotate(image, ???)
-          }
-          promise.success((image, face))
+          promise.success((settings.transform(image, face), face))
         } catch {
           case NonFatal(e) => error(s"Can't take picture $e")
         }
@@ -78,7 +75,7 @@ class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
         override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = try {
           val rect = Rect(Point(face.rect.left, face.rect.top), Point(face.rect.right, face.rect.bottom))
           val image = new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)).copy(rect)
-          promise.success((image, face))
+          promise.success((settings.transform(image, face), face))
         } catch {
           case NonFatal(e) => error(s"Can't take picture $e")
         }
@@ -91,7 +88,7 @@ class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
     private[this] val _callbacks = new scala.collection.mutable.ListBuffer[Face => Any]
 
     override def onFaceDetection(faces: Array[Face], camera: Camera): Unit = if (_callbacks.nonEmpty && faces.nonEmpty) {
-      _callbacks.foreach(_ (faces(0)))
+      _callbacks.foreach(_.apply(faces(0)))
       _callbacks.clear()
     }
 
@@ -99,4 +96,16 @@ class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
   }
 }
 
-case class CameraCapturerFaceSettings(eyesBaselineParallelToSide: Boolean = true)
+//noinspection ScalaDeprecation
+case class CameraCapturerFaceSettings(eyesBaselineParallelToSide: Boolean = true) {
+  def transform(image: AndroidImage, face: Face) = {
+    var result = image
+    if (eyesBaselineParallelToSide) {
+      val leftEyePoint = Point(face.leftEye.x, face.leftEye.y)
+      val rightEyePoint = Point(face.rightEye.x, face.rightEye.y)
+      val vector = GeometricVector(leftEyePoint, rightEyePoint)
+      result = rotate(image, vector.angleX)
+    }
+    result
+  }
+}

@@ -17,36 +17,43 @@
 package ru.reo7sp.f3m.math.geometry
 
 import ru.reo7sp.f3m.math.NumExtensions._
-import ru.reo7sp.f3m.math.geometry.Vector._
+import ru.reo7sp.f3m.math.geometry.GeometricVector._
 
-case class Vector(coords: Double*) {
+import scala.math._
+
+case class GeometricVector(coords: Double*) {
   def apply(i: Int) = if (dimension > i) coords(i) else 0.0
   def x = apply(0)
   def y = apply(1)
   def z = apply(2)
 
-  def map(f: Double => Double) = Vector(coords.map(f): _*)
-  def zip(other: Vector) = coords.zipAll(other.coords, 0.0, 0.0)
+  def angle(i: Int) = acos(apply(i) / length)
+  def angleX = angle(0)
+  def angleY = angle(1)
+  def angleZ = angle(2)
 
-  def +(other: Vector) = (this zip other).map { case (x1, x2) => x1 + x2 }.toGeometricVector
-  def -(other: Vector) = (this zip other).map { case (x1, x2) => x1 - x2 }.toGeometricVector
+  def map(f: Double => Double) = GeometricVector(coords.map(f): _*)
+  def zip(other: GeometricVector) = coords.zipAll(other.coords, 0.0, 0.0)
+
+  def +(other: GeometricVector) = (this zip other).map { case (x1, x2) => x1 + x2 }.toGeometricVector
+  def -(other: GeometricVector) = (this zip other).map { case (x1, x2) => x1 - x2 }.toGeometricVector
   def *(d: Double) = map(_ * d)
   def /(d: Double) = this * (1 / d)
 
-  def cross(other: Vector) = {
+  def cross(other: GeometricVector) = {
     val a = coords
     val b = other.coords
-    Vector(
+    GeometricVector(
       a(1) * b(2) - a(2) * a(1),
       a(0) * b(2) - a(2) * a(0),
       a(0) * b(1) - a(1) * a(0)
     )
   }
 
-  def dot(other: Vector) = (this zip other).map { case (x1, x2) => x1 * x2 }.sum
+  def dot(other: GeometricVector) = (this zip other).map { case (x1, x2) => x1 * x2 }.sum
 
   def lengthSqr = coords.map(_.squared).sum
-  def length = math.sqrt(lengthSqr)
+  def length = sqrt(lengthSqr)
 
   def normalized = this / length
 
@@ -57,7 +64,7 @@ case class Vector(coords: Double*) {
       case 1 => newCoords(1) = y
       case 2 => newCoords(2) = z
     }
-    Vector(newCoords: _*)
+    GeometricVector(newCoords: _*)
   }
 
   def dimension = coords.size
@@ -65,17 +72,20 @@ case class Vector(coords: Double*) {
   def toPoint = Point(coords: _*)
 }
 
-object Vector {
-  def zero(dimension: Int) = Vector(Seq.fill(dimension)(0.0): _*)
+object GeometricVector {
+  def zero(dimension: Int) = GeometricVector(Seq.fill(dimension)(0.0): _*)
+
+  def apply(first: Point, second: Point): GeometricVector = {
+    val vectorCoords = (first.coords zip second.coords).map { case (x1, x2) => x2 - x1 }
+    GeometricVector(vectorCoords: _*)
+  }
 
   implicit class SeqOfDoubleToVectorWrapper(s: Seq[Double]) {
-    def toVector = Vector(s: _*)
-    def toGeometricVector = toVector
+    def toGeometricVector = GeometricVector(s: _*)
   }
 
   implicit class PointToVectorWrapper(p: Point) {
-    def toVector = Vector(p.coords: _*)
-    def toGeometricVector = toVector
+    def toGeometricVector = GeometricVector(p.coords: _*)
   }
 
 }

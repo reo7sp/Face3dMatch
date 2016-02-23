@@ -16,14 +16,14 @@
 
 package ru.reo7sp.f3m.math.geometry
 
+import ru.reo7sp.f3m.math.geometry.GeometricVector._
 import ru.reo7sp.f3m.math.geometry.Point.SeqOfDoubleToPointWrapper
-import ru.reo7sp.f3m.math.geometry.Vector._
 import ru.reo7sp.f3m.math.linear.{LinearEquationsSystem, Matrix, Var}
 
 case class Line(initialPoint: Point, params: Double*) {
   def dimension = params.size - 1
 
-  def apply(point: Point) = {
+  def has(point: Point) = {
     val values = (point.coords, initialPoint.coords, params).zipped.toIterable
     val firstResult = values.head match {
       case (x, x0, a) => (x - x0) / a
@@ -47,12 +47,12 @@ case class Line(initialPoint: Point, params: Double*) {
 
   def findMinDistance(other: Line) = {
     val p = this commonPerpendicularWith other
-    val d = initialPoint.toVector - other.initialPoint.toVector
+    val d = initialPoint.toGeometricVector - other.initialPoint.toGeometricVector
     (p dot d).abs
   }
 
   def findMinDistancePoint(other: Line) = {
-    val d = initialPoint.toVector - other.initialPoint.toVector
+    val d = initialPoint.toGeometricVector - other.initialPoint.toGeometricVector
     val R = d cross commonPerpendicularWith(other)
     val tA = R dot other.params.toGeometricVector
     initialPoint + (params.toGeometricVector * tA).toPoint

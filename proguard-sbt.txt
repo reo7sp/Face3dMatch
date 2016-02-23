@@ -111,11 +111,29 @@
     scala.concurrent.forkjoin.LinkedTransferQueue$PaddedAtomicReference tail;
     scala.concurrent.forkjoin.LinkedTransferQueue$PaddedAtomicReference cleanMe;
 }
-# view AndroidManifest.xml #generated:21
+# view AndroidManifest.xml #generated:38
 -keep class android.test.InstrumentationTestRunner { <init>(...); }
+
+# view res/layout/capturingactivity.xml #generated:23
+-keep class ru.reo7sp.f3m.camera.CameraPreview { <init>(...); }
+
+# view AndroidManifest.xml #generated:19
+-keep class ru.reo7sp.f3m.ui.CapturingActivity { <init>(...); }
 
 # view AndroidManifest.xml #generated:12
 -keep class ru.reo7sp.f3m.ui.MainActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:21
+-keep class ru.reo7sp.f3m.ui.UnlockRequestActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:34
+-keep class ru.reo7sp.f3m.ui.test.AuthDataViewerTestActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:32
+-keep class ru.reo7sp.f3m.ui.test.EdgesFinderTestActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:30
+-keep class ru.reo7sp.f3m.ui.test.ImageFiltersTestActivity { <init>(...); }
 
 -dontobfuscate
 -dontwarn scala.collection.**

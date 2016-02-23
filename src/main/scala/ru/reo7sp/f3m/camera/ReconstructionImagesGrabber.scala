@@ -66,7 +66,7 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
           val editedImage = contrasted(desaturated(filteredImage), factor = 4)
 
           val zOffset = Point(0, 0, acquireDistance)
-          val edges = findEdges(editedImage).map(_ + position + zOffset)
+          val edges = findEdges(editedImage, edgeThreshold = 0.1).map(_ + position + zOffset)
 
           partialSceneries.synchronized {
             partialSceneries += edges.toPartialScenery(cameraPos = position)
