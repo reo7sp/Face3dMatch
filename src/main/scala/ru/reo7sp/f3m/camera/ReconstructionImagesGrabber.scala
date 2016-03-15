@@ -16,10 +16,11 @@
 
 package ru.reo7sp.f3m.camera
 
+import android.content.Context
 import android.graphics.PointF
 import android.media.FaceDetector
-import ru.reo7sp.f3m.image.ArrayImage.{ImageToArrayImageWrapper, TraversableOfPixelToImageTWrapper, imageCompanion}
-import ru.reo7sp.f3m.image.Pixel
+import org.scaloid.common._
+import ru.reo7sp.f3m.image.ArrayImage.ImageToArrayImageWrapper
 import ru.reo7sp.f3m.image.edit.filter._
 import ru.reo7sp.f3m.image.understand.content._
 import ru.reo7sp.f3m.image.understand.perspective.PartialScenery.TraversableOfPoint3dToPartialSceneryWrapper
@@ -29,13 +30,17 @@ import ru.reo7sp.f3m.motion.MotionManager
 import ru.reo7sp.f3m.util.AndroidExecutionContext.executionContext
 
 import scala.collection.mutable
-import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
 
-class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManager: MotionManager) {
+class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManager: MotionManager)(implicit ctx: Context) {
   require(_cameraCapturer != null)
   require(_motionManager != null)
 
   val partialSceneries = new mutable.ListBuffer[PartialScenery]
+
+  private implicit val _loggerTag = LoggerTag("ReconstructionImagesGrabber")
 
   def startGrabbing(): Unit = {
     _motionManager.start()
@@ -50,21 +55,32 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
         Future {
           val scaledImage = image.copy(size = Size(64, 64 / image.size.aspectRatio))
 
-          val faceDetector = new FaceDetector(scaledImage.size.width, scaledImage.size.height, 1)
-          val faces = new Array[FaceDetector#Face](1)
-          faceDetector.findFaces(scaledImage, faces)
-          val face = faces.head
-          val faceMidPoint = new PointF()
-          face.getMidPoint(faceMidPoint)
-          val faceWidth = face.eyesDistance()
-          val faceRect = Rect(
-            Point(faceMidPoint.x - faceWidth, faceMidPoint.y - faceWidth),
-            Point(faceMidPoint.x + faceWidth, faceMidPoint.y + faceWidth)
-          )
+          val faceRect = try {
+            val f = Future {
+              val faceDetector = new FaceDetector(scaledImage.size.width, scaledImage.size.height, 1)
+              val faces = new Array[FaceDetector#Face](1)
+              faceDetector.findFaces(scaledImage, faces)
+              val face = faces.head
+              val faceMidPoint = new PointF()
+              face.getMidPoint(faceMidPoint)
+              val faceWidth = face.eyesDistance()
+              val rect = Rect(
+                Point(faceMidPoint.x - faceWidth, faceMidPoint.y - faceWidth),
+                Point(faceMidPoint.x + faceWidth, faceMidPoint.y + faceWidth)
+              )
+              if (rect.area >= 8) {
+                rect
+              } else {
+                scaledImage.size.toRect
+              }
+            }
+            Await.result(f, 1 second)
+          } catch {
+            case e: Throwable => scaledImage.size.toRect
+          }
 
-          val filteredImage = scaledImage.toArrayImage.pixels.filter { case Pixel(point, _) => faceRect has point }.toImage(scaledImage.size)
-          val croppedImage = filteredImage.copy(Rect(faceRect.topLeft.copy(x = 0), faceRect.bottomRight.copy(x = faceRect.width)))
-          val editedImage = contrasted(desaturated(croppedImage), factor = 4)
+          val imageOnlyWithFace = scaledImage.copy(faceRect)
+          val editedImage = contrasted(desaturated(imageOnlyWithFace.toArrayImage), factor = 4)
 
           val zOffset = Point(0, 0, acquireDistance)
           val edges = findEdges(editedImage, edgeThreshold = 0.1).map(_ + position + zOffset)
@@ -79,5 +95,5 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
 
   def stopGrabbing(): Unit = _motionManager.stop()
 
-  def compute = buildScenery(partialSceneries)
+  def compute = partialSceneries.synchronized(buildScenery(partialSceneries))
 }

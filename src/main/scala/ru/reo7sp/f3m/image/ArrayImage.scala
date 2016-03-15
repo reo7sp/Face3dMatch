@@ -34,6 +34,8 @@ class ArrayImage(val size: Size) extends Image with ImageMutability with ImageCo
     }
     img
   }
+
+  override def toString = s"ArrayImage($size)"
 }
 
 object ArrayImage extends ImageCompanion[ArrayImage] {

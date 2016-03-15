@@ -58,7 +58,7 @@ class MotionManager(val sensorManager: SensorManager) {
 
     override def onSensorChanged(event: SensorEvent): Unit = {
       if (_lastTime != 0) {
-        val dt = (event.timestamp - _lastTime) * 1.0e9
+        val dt = (event.timestamp - _lastTime) * 1.0e-9
         _x += event.values(0) * dt.squared / 2
         _y += event.values(1) * dt.squared / 2
         _z += event.values(2) * dt.squared / 2

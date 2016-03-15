@@ -19,8 +19,10 @@ package ru.reo7sp.f3m.math.linear
 import ru.reo7sp.f3m.math.geometry.Size
 import ru.reo7sp.f3m.math.linear.Matrix.MatrixElement
 
+import scala.collection.mutable
+
 case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) {
-  require(size.area == elements.size)
+  //  require(size.area == elements.size, s"${size.area} != ${elements.size} (${elements.mkString(" ")})")
 
   type Element = MatrixElement[T]
 
@@ -29,9 +31,9 @@ case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) {
   def getValAt(i: Int, j: Int) = apply(i, j).right.get
 
   def transpose = {
-    val newElements = elements.toBuffer
+    val newElements = new mutable.ListBuffer[Element]
     for (j <- 0 until height; i <- 0 until width) {
-      newElements += this(j, i)
+      newElements += this (i, j)
     }
     Matrix(size.transpose, newElements)
   }

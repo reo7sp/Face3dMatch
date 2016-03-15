@@ -21,7 +21,7 @@ import ru.reo7sp.f3m.math.geometry.Point.SeqOfDoubleToPointWrapper
 import ru.reo7sp.f3m.math.linear.{LinearEquationsSystem, Matrix, Var}
 
 case class Line(initialPoint: Point, params: Double*) {
-  def dimension = params.size - 1
+  def dimension = params.size
 
   def has(point: Point) = {
     val values = (point.coords, initialPoint.coords, params).zipped.toIterable
@@ -43,7 +43,7 @@ case class Line(initialPoint: Point, params: Double*) {
     if (ansCount == LinearEquationsSystem.SolutionCount.Zero) None else Option(answer.map(_.get).toPoint)
   }
 
-  def commonPerpendicularWith(other: Line) = (params.toGeometricVector cross other.params.toGeometricVector).normalized
+  def commonPerpendicularWith(other: Line) = (params.toGeometricVector cross other.params.toGeometricVector).normalize
 
   def findMinDistance(other: Line) = {
     val p = this commonPerpendicularWith other
@@ -52,8 +52,9 @@ case class Line(initialPoint: Point, params: Double*) {
   }
 
   def findMinDistancePoint(other: Line) = {
-    val A = params.map(- _) ++ other.params ++ commonPerpendicularWith(other).coords.map(- _)
-    val (answer, ansCount) = LinearEquationsSystem(
+    //    val A = params.map(- _) ++ other.params ++ commonPerpendicularWith(other).coords.map(- _)
+    val A = params ++ other.params ++ commonPerpendicularWith(other).coords
+    val (answer, _) = LinearEquationsSystem(
       A = Matrix(Size(dimension, 3), A.map(Right(_))).transpose,
       x = Seq(Var[Double]('t1), Var[Double]('t2), Var[Double]('l)),
       b = (initialPoint.coords zip other.initialPoint.coords).map { case (x1, x2) => x1 - x2 }
@@ -65,7 +66,7 @@ case class Line(initialPoint: Point, params: Double*) {
 
 object Line {
   def apply(first: Point, second: Point): Line = {
-    val vectorCoords = (first.coords zip second.coords).map { case (x1, x2) => x2 - x1 }
+    val vectorCoords = (first zip second).map { case (x1, x2) => x2 - x1 }
     Line(first, vectorCoords: _*)
   }
 }

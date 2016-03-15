@@ -27,6 +27,8 @@ trait Image {
   def columns: Iterator[Iterator[Pixel]] = (0 until size.width).iterator.map(x => new PixelIterator(new ColumnsPixelIteratorStrategy, Point(x, 0)))
   def pixels: Iterator[Pixel] = new PixelIterator(new AllPixelIteratorStrategy)
 
+  override def toString = s"Image($size)"
+
   class PixelIterator(strategy: PixelIteratorStrategy, var point: Point = Point.zero(2)) extends Iterator[Pixel] {
     override def hasNext: Boolean = strategy.isOk(point)
     override def next(): Pixel = {
@@ -55,13 +57,12 @@ trait Image {
     override def isOk(point: Point): Boolean = point.y < size.height
     override def nextAfter(oldPoint: Point): Point = oldPoint.copy(y = oldPoint.y + 1)
   }
-
 }
 
 object Image {
 
   implicit class TraversableOfPixelToImageWrapper(pixels: TraversableOnce[Pixel]) {
-    def toImage[T <: Image](implicit companion: ImageCompanion[T]) = companion fromPixels pixels
+    def toImage[T <: Image](implicit companion: ImageCompanion[T]) = companion.fromPixels(pixels)
     def toImage[T <: Image](size: Size)(implicit companion: ImageCompanion[T]) = companion.fromPixels(pixels, size)
   }
 }

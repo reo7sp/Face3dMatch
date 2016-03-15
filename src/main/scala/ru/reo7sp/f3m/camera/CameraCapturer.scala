@@ -24,30 +24,28 @@ import org.scaloid.common._
 import ru.reo7sp.f3m.image.AndroidImage
 import ru.reo7sp.f3m.image.edit.transform._
 import ru.reo7sp.f3m.math.geometry.{GeometricVector, Point, Rect}
+import ru.reo7sp.f3m.util.AndroidExecutionContext.executionContext
 
 import scala.concurrent.Promise
-import scala.util.control.NonFatal
+import scala.util.{Failure, Success}
 
 //noinspection ScalaDeprecation
 class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
   require(camera != null)
 
-  implicit val loggerTag = LoggerTag("CameraCapturer")
-
-  def startFaceDetection(): Unit = {
-    camera.setFaceDetectionListener(MyFaceListener)
-    camera.startFaceDetection()
-  }
-
-  def stopFaceDetection(): Unit = camera.stopFaceDetection()
+  private implicit val _loggerTag = LoggerTag("CameraCapturer")
 
   def capture() = {
     val promise = Promise[AndroidImage]
     camera.takePicture(null, null, new PictureCallback {
       override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = try {
-        promise.success(new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)))
+        val opts = new BitmapFactory.Options
+        opts.inSampleSize = 8
+        promise.success(new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length, opts)))
       } catch {
-        case NonFatal(e) => error(s"Can't take picture $e")
+        case e: Throwable =>
+          error(s"Can't take picture $e")
+          promise.failure(e)
       }
     })
     promise.future
@@ -56,14 +54,16 @@ class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
   def captureWithFace(settings: CameraCapturerFaceSettings = CameraCapturerFaceSettings()) = {
     val promise = Promise[(AndroidImage, Face)]
     MyFaceListener.onFace { face =>
-      camera.takePicture(null, null, new PictureCallback {
-        override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = try {
-          var image = new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length))
-          promise.success((settings.transform(image, face), face))
-        } catch {
-          case NonFatal(e) => error(s"Can't take picture $e")
-        }
-      })
+      capture().onComplete {
+        case Success(image) =>
+          try {
+            promise.success((settings.transform(image, face), face))
+          } catch {
+            case e: Throwable => promise.failure(e)
+          }
+
+        case Failure(cause) => promise.failure(cause)
+      }
     }
     promise.future
   }
@@ -71,18 +71,27 @@ class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
   def captureOnlyFace(settings: CameraCapturerFaceSettings = CameraCapturerFaceSettings()) = {
     val promise = Promise[(AndroidImage, Face)]
     MyFaceListener.onFace { face =>
-      camera.takePicture(null, null, new PictureCallback {
-        override def onPictureTaken(data: Array[Byte], camera: Camera): Unit = try {
-          val rect = Rect(Point(face.rect.left, face.rect.top), Point(face.rect.right, face.rect.bottom))
-          val image = new AndroidImage(BitmapFactory.decodeByteArray(data, 0, data.length)).copy(rect)
-          promise.success((settings.transform(image, face), face))
-        } catch {
-          case NonFatal(e) => error(s"Can't take picture $e")
-        }
-      })
+      capture().onComplete {
+        case Success(image) =>
+          try {
+            val rect = Rect(Point(face.rect.left, face.rect.top), Point(face.rect.right, face.rect.bottom))
+            promise.success((settings.transform(image.copy(rect), face), face))
+          } catch {
+            case e: Throwable => promise.failure(e)
+          }
+
+        case Failure(cause) => promise.failure(cause)
+      }
     }
     promise.future
   }
+
+  def startFaceDetection(): Unit = {
+    camera.setFaceDetectionListener(MyFaceListener)
+    camera.startFaceDetection()
+  }
+
+  def stopFaceDetection(): Unit = camera.stopFaceDetection()
 
   private object MyFaceListener extends FaceDetectionListener {
     private[this] val _callbacks = new scala.collection.mutable.ListBuffer[Face => Any]

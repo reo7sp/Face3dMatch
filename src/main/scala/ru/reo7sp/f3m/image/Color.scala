@@ -97,6 +97,8 @@ class Color(val alpha: Double, val red: Double, val green: Double, val blue: Dou
     case other: Product4[Double, Double, Double, Double] => _1 == other._1 && _2 == other._2 && _3 == other._3 && _4 == other._4
     case _ => false
   }
+
+  override def toString = s"Color($alpha, $red, $green, $blue)"
 }
 
 object Color {

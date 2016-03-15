@@ -33,7 +33,7 @@ class AndroidImage(val handle: Bitmap) extends Image with ImageMutability with I
 
   override def copy(rect: Rect, size: Size): AndroidImage = {
     var h = handle
-    if (rect != size.toRect) {
+    if (rect != this.size.toRect) {
       h = Bitmap.createBitmap(h, rect.x.toInt, rect.y.toInt, rect.width.toInt, rect.height.toInt)
     }
     if (size != this.size) {
@@ -41,6 +41,8 @@ class AndroidImage(val handle: Bitmap) extends Image with ImageMutability with I
     }
     new AndroidImage(h)
   }
+
+  override def toString = s"AndroidImage($size)"
 }
 
 object AndroidImage extends ImageCompanion[AndroidImage] {
@@ -75,4 +77,6 @@ object AndroidImage extends ImageCompanion[AndroidImage] {
   implicit class ImageToAndroidImageWrapper(img: Image) {
     def toAndroidImage = AndroidImage.fromPixels(img.pixels, img.size)
   }
+
+  override def toString = s"AndroidImage()"
 }

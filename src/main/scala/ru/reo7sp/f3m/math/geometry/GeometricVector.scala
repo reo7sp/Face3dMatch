@@ -38,7 +38,7 @@ case class GeometricVector(coords: Double*) {
   def +(other: GeometricVector) = (this zip other).map { case (x1, x2) => x1 + x2 }.toGeometricVector
   def -(other: GeometricVector) = (this zip other).map { case (x1, x2) => x1 - x2 }.toGeometricVector
   def *(d: Double) = map(_ * d)
-  def /(d: Double) = this * (1 / d)
+  def /(d: Double) = map(_ / d)
 
   def cross(other: GeometricVector) = {
     val a = coords
@@ -55,7 +55,7 @@ case class GeometricVector(coords: Double*) {
   def lengthSqr = coords.map(_.squared).sum
   def length = sqrt(lengthSqr)
 
-  def normalized = this / length
+  def normalize = this / length
 
   def copy(x: Double = x, y: Double = y, z: Double = z) = {
     val newCoords = coords.toBuffer

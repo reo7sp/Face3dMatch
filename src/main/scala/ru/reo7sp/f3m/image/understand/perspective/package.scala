@@ -16,23 +16,26 @@
 
 package ru.reo7sp.f3m.image.understand
 
+import android.util.Log
 import ru.reo7sp.f3m.image.understand.perspective.Scenery.TraversableOfPoint3dToSceneryWrapper
 import ru.reo7sp.f3m.math.geometry.Line
 
 package object perspective {
   def buildScenery(partials: Traversable[PartialScenery]): Scenery = {
-    val lines = partials.par.flatMap { partialScenery =>
+    val lines = partials.flatMap { partialScenery =>
       partialScenery.points.map(Line(partialScenery.cameraPos, _))
     }
 
-    val points = lines.flatMap { line =>
+    val pairsOfLines = lines.view.flatMap { line =>
       lines.map((_, line))
     }.filterNot { case (line1, line2) =>
-      line1 eq line2
-    }.map { case (line1, line2) =>
-      line1 findMinDistancePoint line2
-    }
+      line1 == line2
+    }.force
 
-    points.seq.toScenery
+
+    pairsOfLines.par.map { case (line1, line2) =>
+      Log.w("", s"$line1 <-> $line2")
+      line1 findMinDistancePoint line2
+    }.seq.toScenery
   }
 }

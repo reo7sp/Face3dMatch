@@ -16,7 +16,7 @@
 
 package ru.reo7sp.f3m.math.linear
 
-import ru.reo7sp.f3m.math.linear.LinearEquationsSystem.{LinearEquationsSystemSolver, GaussSolver, SolutionCount}
+import ru.reo7sp.f3m.math.linear.LinearEquationsSystem.{GaussSolver, LinearEquationsSystemSolver, SolutionCount}
 import ru.reo7sp.f3m.math.linear.Matrix._
 
 case class LinearEquationsSystem(A: Matrix[Double], x: Seq[Var[Double]], b: Seq[Double]) {
@@ -109,8 +109,8 @@ object LinearEquationsSystem {
         m.getValAt(0, 0) * det0 + m.getValAt(1, 0) * det1 + m.getValAt(2, 0) * det2
       }
 
-      require(system.A.width == 3)
-      require(system.A.height == 3)
+      //      require(system.A.width == 3)
+      //      require(system.A.height == 3)
 
       val result = system.x.zipWithIndex.map { case (variable, index) =>
         variable.copy(value = Some(det(index)))
