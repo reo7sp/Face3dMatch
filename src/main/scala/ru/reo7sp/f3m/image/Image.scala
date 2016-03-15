@@ -18,6 +18,8 @@ package ru.reo7sp.f3m.image
 
 import ru.reo7sp.f3m.math.geometry.{Point, Size}
 
+import scala.collection.AbstractIterator
+
 trait Image {
   def size: Size
 
@@ -29,7 +31,7 @@ trait Image {
 
   override def toString = s"Image($size)"
 
-  class PixelIterator(strategy: PixelIteratorStrategy, var point: Point = Point.zero(2)) extends Iterator[Pixel] {
+  class PixelIterator(strategy: PixelIteratorStrategy, var point: Point = Point.zero(2)) extends AbstractIterator[Pixel] {
     override def hasNext: Boolean = strategy.isOk(point)
     override def next(): Pixel = {
       val r = Pixel(point, apply(point))

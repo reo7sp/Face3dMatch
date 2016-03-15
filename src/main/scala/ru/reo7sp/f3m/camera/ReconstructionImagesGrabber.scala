@@ -18,6 +18,7 @@ package ru.reo7sp.f3m.camera
 
 import android.content.Context
 import android.graphics.PointF
+import android.hardware.SensorManager
 import android.media.FaceDetector
 import org.scaloid.common._
 import ru.reo7sp.f3m.image.ArrayImage.ImageToArrayImageWrapper
@@ -43,7 +44,7 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
   private implicit val _loggerTag = LoggerTag("ReconstructionImagesGrabber")
 
   def startGrabbing(): Unit = {
-    _motionManager.start()
+    _motionManager.start(SensorManager.SENSOR_DELAY_NORMAL)
     _motionManager.onMotion { position =>
       _cameraCapturer.capture().onSuccess { case image =>
         def acquireDistance = {
@@ -83,7 +84,7 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
           val editedImage = contrasted(desaturated(imageOnlyWithFace.toArrayImage), factor = 4)
 
           val zOffset = Point(0, 0, acquireDistance)
-          val edges = findEdges(editedImage, edgeThreshold = 0.1).map(_ + position + zOffset)
+          val edges = findEdges(editedImage /*, edgeThreshold = 0.1*/).map(_ + position + zOffset)
 
           partialSceneries.synchronized {
             partialSceneries += edges.toPartialScenery(cameraPos = position)

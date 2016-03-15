@@ -17,7 +17,6 @@
 package ru.reo7sp.f3m.math.linear
 
 import ru.reo7sp.f3m.math.linear.LinearEquationsSystem.{GaussSolver, LinearEquationsSystemSolver, SolutionCount}
-import ru.reo7sp.f3m.math.linear.Matrix._
 
 case class LinearEquationsSystem(A: Matrix[Double], x: Seq[Var[Double]], b: Seq[Double]) {
   require(A.hasOnlyConsts)
@@ -92,29 +91,35 @@ object LinearEquationsSystem {
 
   object KramerSolver extends LinearEquationsSystemSolver {
     override def apply(system: LinearEquationsSystem): (Seq[Var[Double]], SolutionCount.Value) = {
-      def matrix(i: Int): Matrix[Double] = i match {
+      val elems = system.A.elements.view
+
+      def matrix(i: Int) = i match {
         case 0 =>
-          system.A
+          elems.map(_.right.get)
         case _ =>
-          system.A.elements.zipWithIndex.map { case (item, index) =>
-            if (index % 3 == i - 1) Right(system.b(index / 3)) else item
-          }.toMatrix(system.A.size)
+          elems.zipWithIndex.map { case (item, index) =>
+            if (index % 3 == i - 1) system.b(index / 3) else item.right.get
+          }
       }
+
 
       def det(i: Int) = {
         val m = matrix(i)
-        val det0 = m.getValAt(1, 1) * m.getValAt(2, 2) - m.getValAt(1, 2) * m.getValAt(2, 1)
-        val det1 = m.getValAt(0, 1) * m.getValAt(2, 2) - m.getValAt(0, 2) * m.getValAt(2, 1)
-        val det2 = m.getValAt(0, 1) * m.getValAt(1, 2) - m.getValAt(0, 2) * m.getValAt(1, 1)
-        m.getValAt(0, 0) * det0 + m.getValAt(1, 0) * det1 + m.getValAt(2, 0) * det2
+
+        def valAt(i: Int, j: Int) = m(i * system.A.width + j)
+
+        val det0 = valAt(1, 1) * valAt(2, 2) - valAt(1, 2) * valAt(2, 1)
+        val det1 = valAt(0, 1) * valAt(2, 2) - valAt(0, 2) * valAt(2, 1)
+        val det2 = valAt(0, 1) * valAt(1, 2) - valAt(0, 2) * valAt(1, 1)
+        valAt(0, 0) * det0 + valAt(1, 0) * det1 + valAt(2, 0) * det2
       }
 
       //      require(system.A.width == 3)
       //      require(system.A.height == 3)
 
-      val result = system.x.zipWithIndex.map { case (variable, index) =>
+      val result = system.x.view.zipWithIndex.map { case (variable, index) =>
         variable.copy(value = Some(det(index)))
-      }
+      }.force
 
       (result, SolutionCount.One)
     }

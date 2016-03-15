@@ -35,7 +35,7 @@ case class Line(initialPoint: Point, params: Double*) {
 
   def findIntersection(other: Line) = {
     val (answer, ansCount) = LinearEquationsSystem(
-      A = Matrix(Size(dimension, 2), (params ++ other.params).map(Right(_))),
+      A = Matrix(Size(dimension, 2), (params.view ++ other.params).map(Right(_))(collection.breakOut)),
       x = Seq(Var[Double]('x), Var[Double]('y), Var[Double]('z)),
       b = Seq(0.0, 0.0)
     ).solve
@@ -52,15 +52,14 @@ case class Line(initialPoint: Point, params: Double*) {
   }
 
   def findMinDistancePoint(other: Line) = {
-    //    val A = params.map(- _) ++ other.params ++ commonPerpendicularWith(other).coords.map(- _)
-    val A = params ++ other.params ++ commonPerpendicularWith(other).coords
+    val A = params.view.map(-_) ++ other.params ++ commonPerpendicularWith(other).coords.view.map(-_)
     val (answer, _) = LinearEquationsSystem(
-      A = Matrix(Size(dimension, 3), A.map(Right(_))).transpose,
+      A = Matrix(Size(dimension, 3), A.map(Right(_))(collection.breakOut)).transpose,
       x = Seq(Var[Double]('t1), Var[Double]('t2), Var[Double]('l)),
       b = (initialPoint.coords zip other.initialPoint.coords).map { case (x1, x2) => x1 - x2 }
     ).solve(LinearEquationsSystem.KramerSolver)
 
-    initialPoint + params.map(_ * answer.head.get).toPoint
+    initialPoint + params.view.map(_ * answer.head.get).toPoint
   }
 }
 

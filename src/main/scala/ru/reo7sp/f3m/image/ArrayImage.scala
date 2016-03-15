@@ -20,8 +20,7 @@ import ru.reo7sp.f3m.math.geometry.{Point, Rect, Size}
 
 import scala.collection.mutable
 
-class ArrayImage(val size: Size) extends Image with ImageMutability with ImageCopyability[ArrayImage] {
-  val handle = new mutable.HashMap[Point, Color]
+class ArrayImage(val size: Size, val handle: mutable.Map[Point, Color] = new mutable.HashMap[Point, Color]) extends Image with ImageMutability with ImageCopyability[ArrayImage] {
 
   override def apply(p: Point): Color = handle.getOrElse(p, Color.BLACK)
   override def update(p: Point, c: Color): Unit = handle(p) = c
@@ -42,9 +41,8 @@ object ArrayImage extends ImageCompanion[ArrayImage] {
   override def ofSize(size: Size): ArrayImage = new ArrayImage(size)
 
   override def fromPixels(pixels: TraversableOnce[Pixel], size: Size): ArrayImage = {
-    val img = ArrayImage ofSize size
-    img.handle ++= pixels.map(pixel => (pixel.point, pixel.color))
-    img
+    val pixelsAsTuples = pixels.toStream.view.map(pixel => (pixel.point, pixel.color))
+    new ArrayImage(size, mutable.Map(pixelsAsTuples: _*))
   }
 
   implicit class ImageToArrayImageWrapper(img: Image) {

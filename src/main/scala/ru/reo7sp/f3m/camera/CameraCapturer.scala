@@ -45,7 +45,7 @@ class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
       } catch {
         case e: Throwable =>
           error(s"Can't take picture $e")
-          promise.failure(e)
+          promise.tryFailure(e)
       }
     })
     promise.future
@@ -59,10 +59,10 @@ class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
           try {
             promise.success((settings.transform(image, face), face))
           } catch {
-            case e: Throwable => promise.failure(e)
+            case e: Throwable => promise.tryFailure(e)
           }
 
-        case Failure(cause) => promise.failure(cause)
+        case Failure(cause) => promise.tryFailure(cause)
       }
     }
     promise.future
@@ -77,10 +77,10 @@ class CameraCapturer(val camera: Camera)(implicit ctx: Context) {
             val rect = Rect(Point(face.rect.left, face.rect.top), Point(face.rect.right, face.rect.bottom))
             promise.success((settings.transform(image.copy(rect), face), face))
           } catch {
-            case e: Throwable => promise.failure(e)
+            case e: Throwable => promise.tryFailure(e)
           }
 
-        case Failure(cause) => promise.failure(cause)
+        case Failure(cause) => promise.tryFailure(cause)
       }
     }
     promise.future

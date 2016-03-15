@@ -21,7 +21,7 @@ import ru.reo7sp.f3m.math.linear.Matrix.MatrixElement
 
 import scala.collection.mutable
 
-case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) {
+case class Matrix[T](size: Size, elements: IndexedSeq[MatrixElement[T]]) {
   //  require(size.area == elements.size, s"${size.area} != ${elements.size} (${elements.mkString(" ")})")
 
   type Element = MatrixElement[T]
@@ -31,7 +31,7 @@ case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) {
   def getValAt(i: Int, j: Int) = apply(i, j).right.get
 
   def transpose = {
-    val newElements = new mutable.ListBuffer[Element]
+    val newElements = new mutable.ArrayBuffer[Element](size.area)
     for (j <- 0 until height; i <- 0 until width) {
       newElements += this (i, j)
     }
@@ -57,7 +57,7 @@ case class Matrix[T](size: Size, elements: Seq[MatrixElement[T]]) {
 object Matrix {
   type MatrixElement[T] = Either[Var[T], T]
 
-  implicit class SeqOfSeqOfMatrixElementToMatrixWrapper[T](arr: Seq[Seq[MatrixElement[T]]]) {
+  implicit class SeqOfSeqOfMatrixElementToMatrixWrapper[T](arr: IndexedSeq[IndexedSeq[MatrixElement[T]]]) {
     def toMatrix = {
       val width = if (arr.nonEmpty) arr.head.length else 0
       val height = arr.length
@@ -66,7 +66,7 @@ object Matrix {
     }
   }
 
-  implicit class SeqOfMatrixElementToMatrixWrapper[T](arr: Seq[MatrixElement[T]]) {
+  implicit class SeqOfMatrixElementToMatrixWrapper[T](arr: IndexedSeq[MatrixElement[T]]) {
     def toMatrix(size: Size) = Matrix(size, arr)
   }
 

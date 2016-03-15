@@ -29,7 +29,7 @@ case class Point(coords: Double*) {
   def z = apply(2)
 
   def map(f: Double => Double) = Point(coords.map(f): _*)
-  def zip(other: Point) = coords.zipAll(other.coords, 0.0, 0.0)
+  def zip(other: Point) = coords.view.zipAll(other.coords, 0.0, 0.0)
 
   def +(other: Point) = (this zip other).map { case (x1, x2) => x1 + x2 }.toPoint
   def -(other: Point) = (this zip other).map { case (x1, x2) => x1 - x2 }.toPoint
@@ -53,7 +53,7 @@ case class Point(coords: Double*) {
 }
 
 object Point {
-  def zero(dimension: Int) = Point(Seq.fill(dimension)(0.0): _*)
+  def zero(dimension: Int) = Point(IndexedSeq.fill(dimension)(0.0): _*)
 
   implicit class SeqOfDoubleToPointWrapper(s: Seq[Double]) {
     def toPoint = Point(s: _*)

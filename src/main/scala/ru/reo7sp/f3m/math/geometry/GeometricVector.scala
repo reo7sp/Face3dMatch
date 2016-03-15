@@ -35,8 +35,8 @@ case class GeometricVector(coords: Double*) {
   def map(f: Double => Double) = GeometricVector(coords.map(f): _*)
   def zip(other: GeometricVector) = coords.zipAll(other.coords, 0.0, 0.0)
 
-  def +(other: GeometricVector) = (this zip other).map { case (x1, x2) => x1 + x2 }.toGeometricVector
-  def -(other: GeometricVector) = (this zip other).map { case (x1, x2) => x1 - x2 }.toGeometricVector
+  def +(other: GeometricVector) = (this zip other).view.map { case (x1, x2) => x1 + x2 }.toGeometricVector
+  def -(other: GeometricVector) = (this zip other).view.map { case (x1, x2) => x1 - x2 }.toGeometricVector
   def *(d: Double) = map(_ * d)
   def /(d: Double) = map(_ / d)
 
@@ -50,7 +50,7 @@ case class GeometricVector(coords: Double*) {
     )
   }
 
-  def dot(other: GeometricVector) = (this zip other).map { case (x1, x2) => x1 * x2 }.sum
+  def dot(other: GeometricVector) = (this zip other).view.map { case (x1, x2) => x1 * x2 }.sum
 
   def lengthSqr = coords.map(_.squared).sum
   def length = sqrt(lengthSqr)
@@ -73,7 +73,7 @@ case class GeometricVector(coords: Double*) {
 }
 
 object GeometricVector {
-  def zero(dimension: Int) = GeometricVector(Seq.fill(dimension)(0.0): _*)
+  def zero(dimension: Int) = GeometricVector(IndexedSeq.fill(dimension)(0.0): _*)
 
   def apply(first: Point, second: Point): GeometricVector = {
     val vectorCoords = (first.coords zip second.coords).map { case (x1, x2) => x2 - x1 }

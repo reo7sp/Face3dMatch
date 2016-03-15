@@ -29,9 +29,9 @@ class MotionManager(val sensorManager: SensorManager) {
   private[this] var _listeners = new mutable.ListBuffer[Point => Any]
   private[this] var _isRunning = false
 
-  def start(): Unit = if (!_isRunning) {
+  def start(delay: Int = SensorManager.SENSOR_DELAY_GAME): Unit = if (!_isRunning) {
     _isRunning = true
-    sensorManager.registerListener(MySensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_GAME)
+    sensorManager.registerListener(MySensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), delay)
   }
 
   def stop(): Unit = if (_isRunning) {
