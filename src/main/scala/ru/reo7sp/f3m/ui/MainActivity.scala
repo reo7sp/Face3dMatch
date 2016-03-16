@@ -39,7 +39,9 @@ class MainActivity extends SActivity {
     _authDataStorage.loadWithUI.onComplete {
       case Success(sceneryOpt) => sceneryOpt match {
         case Some(savedScenery) =>
+          val dialogHandle = spinnerDialog("Сравнение", "Подождите немного")
           val similarity = savedScenery similarityWith scenery
+          dialogHandle.foreach(_.dismiss())
           info(s"similarity: ${similarity * 100}%")
           if (similarity > 0.5) {
             alert("Успешно", s"${similarity * 100}%")
