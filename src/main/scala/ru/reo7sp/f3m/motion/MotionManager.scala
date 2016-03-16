@@ -5,13 +5,13 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package ru.reo7sp.f3m.motion
@@ -25,8 +25,8 @@ import scala.collection.mutable
 class MotionManager(val sensorManager: SensorManager) {
   require(sensorManager != null)
 
-  private[this] var _x, _y, _z = 0.0
-  private[this] var _listeners = new mutable.ListBuffer[Point => Any]
+  protected[this] var _x, _y, _z = 0.0
+  protected[this] var _listeners = new mutable.ListBuffer[Point => Any]
   private[this] var _isRunning = false
 
   def start(delay: Int = SensorManager.SENSOR_DELAY_GAME): Unit = if (!_isRunning) {
@@ -53,7 +53,7 @@ class MotionManager(val sensorManager: SensorManager) {
   def onMotion(callback: Point => Any) = _listeners += callback
   def unregister(callback: Point => Any) = _listeners -= callback
 
-  private object MySensorListener extends SensorEventListener {
+  protected object MySensorListener extends SensorEventListener {
     private[this] var _lastTime = 0L
 
     override def onSensorChanged(event: SensorEvent): Unit = {

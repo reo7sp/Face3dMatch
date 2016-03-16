@@ -5,13 +5,13 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package ru.reo7sp.f3m.camera
@@ -32,6 +32,7 @@ import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
+import scala.util.Random
 
 class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManager: MotionManager)(implicit ctx: Context) {
   require(_cameraCapturer != null)
@@ -67,7 +68,11 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
           val editedImage = contrasted(desaturated(imageOnlyWithFace.toArrayImage), factor = 4)
 
           val zOffset = Point(0, 0, acquireDistance)
-          val edges = findEdges(editedImage /*, edgeThreshold = 0.1*/).map(_ + position + zOffset)
+          val edges = findEdges(editedImage /*, edgeThreshold = 0.1*/).map { p =>
+            p + position + zOffset
+          }.filter { p =>
+            (1 to 4).view.map(x => Random.nextBoolean()).reduce(_ && _)
+          }
 
           partialSceneries.synchronized {
             partialSceneries += edges.toPartialScenery(cameraPos = position)

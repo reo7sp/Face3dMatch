@@ -5,13 +5,13 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package ru.reo7sp.f3m.ui
@@ -22,9 +22,9 @@ import android.view.View
 import android.widget.Button
 import org.scaloid.common._
 import ru.reo7sp.f3m.R
-import ru.reo7sp.f3m.camera.{CameraCapturer, CameraPreview, ReconstructionImagesGrabber}
+import ru.reo7sp.f3m.camera.{CameraCapturer, CameraPreview, PhotoSetCameraCapturer, ReconstructionImagesGrabber}
 import ru.reo7sp.f3m.image.understand.perspective.Scenery
-import ru.reo7sp.f3m.motion.MotionManager
+import ru.reo7sp.f3m.motion.{DataSetMotionManager, MotionManager}
 import ru.reo7sp.f3m.util.AndroidExecutionContext.executionContext
 
 import scala.collection.mutable
@@ -39,10 +39,26 @@ class CapturingActivity extends SActivity {
   private[this] var _grabber: ReconstructionImagesGrabber = null
   private[this] var _callbackId: Int = 0 // HACK
 
+  private val IS_USING_SET = false // HACK
+
+  private def getImageData = {
+    ???
+  }
+
+  private def getPointData = {
+    ???
+  }
+
   onCreate {
-    _camera = acquireCamera()
-    _motionManager = new MotionManager(sensorManager)
-    _grabber = new ReconstructionImagesGrabber(new CameraCapturer(_camera), _motionManager)
+    // HACK
+    if (!IS_USING_SET) {
+      _camera = acquireCamera()
+      _motionManager = new MotionManager(sensorManager)
+      _grabber = new ReconstructionImagesGrabber(new CameraCapturer(_camera), _motionManager)
+    } else {
+      _motionManager = new DataSetMotionManager(sensorManager, getPointData)
+      _grabber = new ReconstructionImagesGrabber(new PhotoSetCameraCapturer(_camera, getImageData), _motionManager)
+    }
     _callbackId = getIntent.getIntExtra("callbackId", 0) // HACK
 
     setContentView(R.layout.capturingactivity)
