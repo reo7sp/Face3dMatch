@@ -40,10 +40,11 @@ class MainActivity extends SActivity {
       case Success(sceneryOpt) => sceneryOpt match {
         case Some(savedScenery) =>
           val similarity = savedScenery similarityWith scenery
+          info(s"similarity: ${similarity * 100}%")
           if (similarity > 0.5) {
-            alert("Успешно", s"${(similarity * 100).toInt}%")
+            alert("Успешно", s"${similarity * 100}%")
           } else {
-            alert("Не успешно", s"${(similarity * 100).toInt}%")
+            alert("Не успешно", s"${similarity * 100}%")
           }
         case None => _installButtonCallback(scenery)
       }
