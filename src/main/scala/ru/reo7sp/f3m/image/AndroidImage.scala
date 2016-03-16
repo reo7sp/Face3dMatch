@@ -75,7 +75,10 @@ object AndroidImage extends ImageCompanion[AndroidImage] {
   override def fromPixels(pixels: TraversableOnce[Pixel], size: Size): AndroidImage = AndroidImage.fromPixels(pixels, size, Bitmap.Config.ARGB_8888)
 
   implicit class ImageToAndroidImageWrapper(img: Image) {
-    def toAndroidImage = AndroidImage.fromPixels(img.pixels, img.size)
+    def toAndroidImage = img match {
+      case image: AndroidImage => image
+      case _ => AndroidImage.fromPixels(img.pixels, img.size)
+    }
   }
 
   override def toString = s"AndroidImage()"

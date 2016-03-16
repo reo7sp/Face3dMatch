@@ -17,16 +17,14 @@
 package ru.reo7sp.f3m.camera
 
 import android.content.Context
-import android.graphics.PointF
 import android.hardware.SensorManager
-import android.media.FaceDetector
 import org.scaloid.common._
 import ru.reo7sp.f3m.image.ArrayImage.ImageToArrayImageWrapper
 import ru.reo7sp.f3m.image.edit.filter._
 import ru.reo7sp.f3m.image.understand.content._
 import ru.reo7sp.f3m.image.understand.perspective.PartialScenery.TraversableOfPoint3dToPartialSceneryWrapper
 import ru.reo7sp.f3m.image.understand.perspective.{PartialScenery, _}
-import ru.reo7sp.f3m.math.geometry.{Point, Rect, Size}
+import ru.reo7sp.f3m.math.geometry.{Point, Size}
 import ru.reo7sp.f3m.motion.MotionManager
 import ru.reo7sp.f3m.util.AndroidExecutionContext.executionContext
 
@@ -54,33 +52,18 @@ class ReconstructionImagesGrabber(_cameraCapturer: CameraCapturer, _motionManage
         }
 
         Future {
-          val scaledImage = image.copy(size = Size(64, 64 / image.size.aspectRatio))
-
           val faceRect = try {
             val f = Future {
-              val faceDetector = new FaceDetector(scaledImage.size.width, scaledImage.size.height, 1)
-              val faces = new Array[FaceDetector#Face](1)
-              faceDetector.findFaces(scaledImage, faces)
-              val face = faces.head
-              val faceMidPoint = new PointF()
-              face.getMidPoint(faceMidPoint)
-              val faceWidth = face.eyesDistance()
-              val rect = Rect(
-                Point(faceMidPoint.x - faceWidth, faceMidPoint.y - faceWidth),
-                Point(faceMidPoint.x + faceWidth, faceMidPoint.y + faceWidth)
-              )
-              if (rect.area >= 8) {
-                rect
-              } else {
-                scaledImage.size.toRect
-              }
+              findFaces(image).headOption.getOrElse(image.size.toRect)
             }
-            Await.result(f, 1 second)
+            Await.result(f, 2 seconds)
           } catch {
-            case e: Throwable => scaledImage.size.toRect
+            case e: Throwable =>
+              warn(e.toString)
+              image.size.toRect
           }
 
-          val imageOnlyWithFace = scaledImage.copy(faceRect)
+          val imageOnlyWithFace = image.copy(faceRect, Size(32, 32 / image.size.aspectRatio))
           val editedImage = contrasted(desaturated(imageOnlyWithFace.toArrayImage), factor = 4)
 
           val zOffset = Point(0, 0, acquireDistance)

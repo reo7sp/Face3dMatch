@@ -25,9 +25,12 @@ import ru.reo7sp.f3m.R
 import ru.reo7sp.f3m.camera.{CameraCapturer, CameraPreview, ReconstructionImagesGrabber}
 import ru.reo7sp.f3m.image.understand.perspective.Scenery
 import ru.reo7sp.f3m.motion.MotionManager
+import ru.reo7sp.f3m.util.AndroidExecutionContext.executionContext
 
 import scala.collection.mutable
-import scala.util.Random
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+import scala.util.{Failure, Random, Success}
 
 //noinspection ScalaDeprecation
 class CapturingActivity extends SActivity {
@@ -58,8 +61,22 @@ class CapturingActivity extends SActivity {
     find[Button](R.id.stopButton).onClick {
       val callback = CapturingActivity._actionsQueue.remove(_callbackId).get // HACK
       _grabber.stopGrabbing()
-      callback(_grabber.compute)
-      finish()
+      val dialogHandle = spinnerDialog("Обработка", "")
+      longToast(s"${_grabber.partialSceneries.view.map(_.points.size).sum} points captured")
+      val dialog = Await.result(dialogHandle, Duration.Inf)
+      val (future, progressTeller) = _grabber.compute
+      future.onComplete {
+        case Success(s) =>
+          dialog.dismiss()
+          finish()
+          callback(s)
+
+        case Failure(e) =>
+          e.printStackTrace()
+          alert("Ошибка", e.toString)
+//          finish()
+      }
+      progressTeller.onUpdate(i => runOnUiThread(dialog.setMessage(s"$i точек вычислены")))
     }
   }
 

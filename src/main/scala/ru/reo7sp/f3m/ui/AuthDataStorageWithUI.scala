@@ -26,15 +26,15 @@ import scala.concurrent.Future
 
 class AuthDataStorageWithUI(implicit ctx: Context) extends AuthDataStorage {
   def loadWithUI: Future[Option[Scenery]] = Future {
-    val dialogOpt = spinnerDialog("Загрузка", "Подождите немного")
+    val dialogHandle = spinnerDialog("Загрузка", "Подождите немного")
     val result = load
-    dialogOpt.foreach(_.dismiss())
+    dialogHandle.foreach(_.dismiss())
     result
   }
 
   def saveWithUI(scenery: Scenery): Future[Unit] = Future {
-    val dialogOpt = spinnerDialog("Сохранение", "Подождите немного")
+    val dialogHandle = spinnerDialog("Сохранение", "Подождите немного")
     save(scenery)
-    dialogOpt.foreach(_.dismiss())
+    dialogHandle.foreach(_.dismiss())
   }
 }

@@ -46,6 +46,9 @@ object ArrayImage extends ImageCompanion[ArrayImage] {
   }
 
   implicit class ImageToArrayImageWrapper(img: Image) {
-    def toArrayImage = ArrayImage.fromPixels(img.pixels, img.size)
+    def toArrayImage = img match {
+      case image: ArrayImage => image
+      case _ => ArrayImage.fromPixels(img.pixels, img.size)
+    }
   }
 }

@@ -39,4 +39,7 @@ package object content {
 
     a ++ b
   }
+
+  def findFaces(image: Image)(implicit faceFinder: FaceFinder = AndroidFaceFinder) = faceFinder(image)
 }
+

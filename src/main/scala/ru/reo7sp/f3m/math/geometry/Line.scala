@@ -46,7 +46,7 @@ case class Line(initialPoint: Point, params: Double*) {
   def commonPerpendicularWith(other: Line) = (params.toGeometricVector cross other.params.toGeometricVector).normalize
 
   def findMinDistance(other: Line) = {
-    val p = this commonPerpendicularWith other
+    val p = commonPerpendicularWith(other)
     val d = initialPoint.toGeometricVector - other.initialPoint.toGeometricVector
     (p dot d).abs
   }
@@ -54,12 +54,12 @@ case class Line(initialPoint: Point, params: Double*) {
   def findMinDistancePoint(other: Line) = {
     val A = params.view.map(-_) ++ other.params ++ commonPerpendicularWith(other).coords.view.map(-_)
     val (answer, _) = LinearEquationsSystem(
-      A = Matrix(Size(dimension, 3), A.map(Right(_))(collection.breakOut)).transpose,
+      A = Matrix(Size(dimension, 3), A.map(Right(_)).toIndexedSeq).transpose,
       x = Seq(Var[Double]('t1), Var[Double]('t2), Var[Double]('l)),
       b = (initialPoint.coords zip other.initialPoint.coords).map { case (x1, x2) => x1 - x2 }
     ).solve(LinearEquationsSystem.KramerSolver)
-
-    initialPoint + params.view.map(_ * answer.head.get).toPoint
+    val t1 = answer.head.get
+    initialPoint + params.view.map(_ * t1).toPoint
   }
 }
 

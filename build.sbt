@@ -14,11 +14,13 @@ dexMulti in Android := true
 proguardOptions in Android ++= Seq("-dontobfuscate", "-dontwarn scala.collection.**", "-dontwarn org.scaloid.**")
 
 // dependencies
+resolvers += Resolver.jcenterRepo
 libraryDependencies ++= Seq(
   aar("com.android.support" % "multidex" % "1.0.1"),
+  "javax.inject" % "javax.inject" % "1",
   "org.scaloid" %% "scaloid" % "4.1",
-  "org.json4s" %% "json4s-native" % "3.3.0",
-  "javax.inject" % "javax.inject" % "1"
+  "org.json4s" %% "json4s-native" % "3.3.0"
+//  "org.openpnp" % "opencv" % "2.4.11-2"
 )
 
 // tasks
