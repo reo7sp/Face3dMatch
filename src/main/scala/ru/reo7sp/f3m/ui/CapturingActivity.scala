@@ -39,25 +39,10 @@ class CapturingActivity extends SActivity {
   private[this] var _grabber: ReconstructionImagesGrabber = null
   private[this] var _callbackId: Int = 0 // HACK
 
-//  private val IS_USING_SET = false // HACK
-//
-//  private def getImageData = {
-//    ???
-//  }
-//
-//  private def getPointData = {
-//    ???
-//  }
-//
-//    if (!IS_USING_SET) {
   onCreate {
     _camera = acquireCamera()
     _motionManager = new MotionManager(sensorManager)
     _grabber = new ReconstructionImagesGrabber(new CameraCapturer(_camera), _motionManager)
-//    } else {
-//      _motionManager = new DataSetMotionManager(sensorManager, getPointData)
-//      _grabber = new ReconstructionImagesGrabber(new PhotoSetCameraCapturer(_camera, getImageData), _motionManager)
-//    }
     _callbackId = getIntent.getIntExtra("callbackId", 0) // HACK
 
     setContentView(R.layout.capturingactivity)

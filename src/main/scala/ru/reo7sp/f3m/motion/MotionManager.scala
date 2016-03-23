@@ -25,8 +25,8 @@ import scala.collection.mutable
 class MotionManager(val sensorManager: SensorManager) {
   require(sensorManager != null)
 
-  protected[this] var _x, _y, _z = 0.0
-  protected[this] var _listeners = new mutable.ListBuffer[Point => Any]
+  private[this] var _x, _y, _z = 0.0
+  private[this] var _listeners = new mutable.ListBuffer[Point => Any]
   private[this] var _isRunning = false
 
   def start(delay: Int = SensorManager.SENSOR_DELAY_GAME): Unit = if (!_isRunning) {
@@ -53,7 +53,7 @@ class MotionManager(val sensorManager: SensorManager) {
   def onMotion(callback: Point => Any) = _listeners += callback
   def unregister(callback: Point => Any) = _listeners -= callback
 
-  protected object MySensorListener extends SensorEventListener {
+  private object MySensorListener extends SensorEventListener {
     private[this] var _lastTime = 0L
 
     override def onSensorChanged(event: SensorEvent): Unit = {
